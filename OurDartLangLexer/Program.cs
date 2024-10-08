@@ -50,31 +50,30 @@ Dictionary<(int, string), int> stf = new Dictionary<(int, string), int>
     { (0, "Letter"), 11 }, { (11, "Letter"), 11 }, { (11, "Digit"), 11 }, { (11, "other"), 12 },
     { (0, "Digit"), 21 }, { (21, "Digit"), 21 }, { (21, "other"), 22 },
     { (21, "dot"), 23 }, { (23, "Digit"), 23 }, { (23, "other"), 24 },
-    { (0, "+"), 20 }, { (0, "-"), 20 }, { (20, "Digit"), 21 },
-    { (20, "other"), 25 },
     { (0, "="), 30 }, { (30, "="), 32 },
     { (30, "other"), 31 },
     { (0, ";"), 41 },
     { (0, "eol"), 51 },
-    { (0, "/"), 60 }, { (60, "/"), 61 }, { (61, "Letter"), 61 }, { (61, "Digit"), 61 }, { (61, "eol"), 62 },
+    { (0, "/"), 60 }, { (60, "/"), 61 }, { (61, "other"), 61 }, { (61, "eol"), 62 },
     { (60, "other"), 63 },
     { (0, "("), 71 }, { (0, ")"), 71 }, { (0, "{"), 71 }, { (0, "}"), 71 },
-    { (0, "*"), 81 }, { (0, "^"), 81 },
+    { (0, "*"), 81 }, { (0, "^"), 81 }, { (0, "+"), 81 }, { (0, "-"), 81 },
     { (0, ">"), 90 }, { (0, "<"), 90 }, { (90, "="), 92 },
     { (0, "!"), 91 }, { (91, "="), 92 },
     { (90, "other"), 93 },
     { (0, "ws"), 0 },
-    { (0, "other"), 100 }
+    { (0, "other"), 100 },
+    { (91, "other"), 109 }
 };
 
 // Стартовий стан
 int initState = 0;
 // Множина заключних станів
-HashSet<int> F = new HashSet<int> { 12, 22, 24, 25, 31, 32, 41, 51, 62, 63, 71, 81, 92, 93, 100 };
+HashSet<int> F = new HashSet<int> { 12, 22, 24, 31, 32, 41, 51, 62, 63, 71, 81, 92, 93, 100, 109 };
 // Заключні стани, що потребують обробки
-HashSet<int> Fstar = new HashSet<int> { 12, 22, 24, 25, 31, 63, 93 };
+HashSet<int> Fstar = new HashSet<int> { 12, 22, 24, 31, 63, 93 };
 // Стани помилок
-HashSet<int> Ferror = new HashSet<int> { 100 };
+HashSet<int> Ferror = new HashSet<int> { 100, 109 };
 
 // Таблиця ідентифікаторів
 Dictionary<string, int> tableOfId = new Dictionary<string, int>();
@@ -156,17 +155,19 @@ void Processing()
         string token = GetToken(state, lexeme);
         if (token == "keyword") // Keyword
         {
-            Console.WriteLine($"{numLine,-3} {lexeme,-10} {token,-10}");
+            //Console.WriteLine($"{numLine,-3} {lexeme,-10} {token,-10}");
             tableOfSymb.Add($"{numLine,-3} {lexeme,-10} {token,-10}");
         }
         else if(token == "boolval") // Boolean
         {
-
+            int index = IndexIdConst(state, lexeme);
+            //Console.WriteLine($"{numLine,-3} {lexeme,-10} {token,-10} {index,-5}");
+            tableOfSymb.Add($"{numLine,-3} {lexeme,-10} {token,-10} {index,-5}");
         }
         else // Number
         {
             int index = IndexIdConst(state, lexeme);
-            Console.WriteLine($"{numLine,-3} {lexeme,-10} {token,-10} {index,-5}");
+            //Console.WriteLine($"{numLine,-3} {lexeme,-10} {token,-10} {index,-5}");
             tableOfSymb.Add($"{numLine,-3} {lexeme,-10} {token,-10} {index,-5}");
         }
 
@@ -175,21 +176,21 @@ void Processing()
         state = initState;
     }
 
-    if ( state == 25 || state == 31 || state == 63 || state == 93) // +,- or = or / or <,>
+    if ( state == 31 || state == 63 || state == 93) // = or / or <,>
     {
         string token = GetToken(state, lexeme);
-        Console.WriteLine($"{numLine,-3} {lexeme,-10} {token,-10}");
+        //Console.WriteLine($"{numLine,-3} {lexeme,-10} {token,-10}");
         tableOfSymb.Add($"{numLine,-3} {lexeme,-10} {token,-10}");
         lexeme = "";
         numChar = PutCharBack(numChar); // Зірочка
         state = initState;
     }
 
-    if (state == 32 || state == 41 || state == 71 || state == 81 || state == 92) // == or ; or (){} or *^ or !=, <=, >=
+    if (state == 32 || state == 41 || state == 71 || state == 81 || state == 92) // == or ; or (){} or *^+- or !=, <=, >=
     {
         lexeme += charSymbol;
         string token = GetToken(state, lexeme);
-        Console.WriteLine($"{numLine,-3} {lexeme,-10} {token,-10}");
+        //Console.WriteLine($"{numLine,-3} {lexeme,-10} {token,-10}");
         tableOfSymb.Add($"{numLine,-3} {lexeme,-10} {token,-10}");
         lexeme = "";
         state = initState;
@@ -220,11 +221,11 @@ void Fail()
         Console.WriteLine($"Lexer: у рядку {numLine} неочікуваний символ {charSymbol}");
         Environment.Exit(100);
     }
-    /*else if (state == 102)
+    else if (state == 109)
     {
         Console.WriteLine($"Lexer: у рядку {numLine} очікувався символ =, а не {charSymbol}");
-        Environment.Exit(102);
-    }*/
+        Environment.Exit(109);
+    }
 }
 
 bool IsFinal(int state)
@@ -262,7 +263,7 @@ string ClassOfChar(char ch)
     if (char.IsDigit(ch)) return "Digit";
     if (ch == ' ' || ch == '\t') return "ws";
     if (ch == '\n' || ch == '\r') return "eol";
-    if ("=+-*/^!(){};".Contains(ch)) return ch.ToString();
+    if ("=+-*/^<>!(){};".Contains(ch)) return ch.ToString();
     return "символ не належить алфавіту";
 }
 

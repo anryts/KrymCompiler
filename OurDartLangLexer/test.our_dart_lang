@@ -1,5 +1,37 @@
 ﻿main {
-    //declarations
+    // Оголошення змінних
     int a = -5;
     double b = 10.5;
+    bool logic = true;
+
+    // Арифметичні операції
+    int sum = a + 10;
+    double diff = b - 5.5;
+    double prod = a * b;
+    double div = b / 2;
+    int power = a ^ 3;
+
+    // Логічні операції
+    bool isequal = (a == -5);
+    bool notequal = (b != 10.0);
+    bool greater = (a > -5);
+    bool greateroequal = (a >= -5);
+    bool less = (b < 10.5);
+    bool lessorequal = (b <= 10.5);
+
+    // Оператор розгалудження
+    if (logic) {
+        print(a);
+    } else {
+        print(b);
+    }
+
+    // Оператор повторення
+    for (int i = 0; i < a; i = i + 1) {
+        print(i);
+    }
+
+    // Ввід/вивід
+    int numb = read();
+    print(numb);
 }
