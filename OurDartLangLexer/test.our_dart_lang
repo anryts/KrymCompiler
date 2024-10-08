@@ -1,0 +1,5 @@
+﻿main {
+    //declarations
+    int a = -5;
+    double b = 10.5;
+}
