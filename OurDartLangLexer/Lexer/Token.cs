@@ -1,9 +1,10 @@
-namespace OurDartLangLexer;
+namespace OurDartLangLexer.Lexer;
 
-public class Token(string lexeme, string type)
+public struct Token(string lexeme, string type)
 {
-    public string Lexeme { get; set; } = lexeme;
-    public string Type { get; set; } = type;
+    private string Lexeme { get; set; } = lexeme;
+    private string Type { get; set; } = type;
+
 
     public override string ToString()
     {

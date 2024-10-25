@@ -1,9 +1,11 @@
+using OurDartLangLexer.Lexer;
+
 namespace OurDartLangLexer.DataProviders;
 
 public class OutputHandler
 {
     // Method to write the lexer output to the console
-    public void WriteToConsole(List<(string lexeme, string tokenType)> tableOfSymbols)
+    public void WriteToConsole(List<Token> tableOfSymbols)
     {
         Console.WriteLine("Line  Lexeme     Token Type");
         Console.WriteLine("-----------------------------------");
@@ -16,7 +18,7 @@ public class OutputHandler
     }
 
     // Method to write the lexer output to a file
-    public void WriteToFile(string filePath, List<(string lexeme, string tokenType)> tableOfSymbols)
+    public void WriteToFile(string filePath, List<Token> tableOfSymbols)
     {
         try
         {

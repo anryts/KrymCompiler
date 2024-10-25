@@ -1,4 +1,4 @@
-namespace OurDartLangLexer;
+namespace OurDartLangLexer.Lexer;
 
 public static class LexerConfiguration
 {
