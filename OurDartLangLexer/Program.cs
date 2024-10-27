@@ -14,5 +14,5 @@ var sourceCodeArr = File.ReadAllText(filePath);
 
 lexer.ProcessInput(sourceCodeArr);
 
-var outputHandler = new OutputHandler();
-outputHandler.WriteToConsole(lexer.TokenTable);
+OutputHandler.WriteToConsole(lexer.TokenTable, lexer.SymbolTable);
+OutputHandler.WriteToFile(Path.Combine(projectDirectory, "output.txt"), lexer.TokenTable, lexer.SymbolTable);

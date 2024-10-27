@@ -1,13 +1,14 @@
 namespace OurDartLangLexer.Lexer;
 
-public struct Token(string lexeme, string type)
+public struct Token(int numLine, string lexeme, string type, int? index = null)
 {
-    private string Lexeme { get; set; } = lexeme;
-    private string Type { get; set; } = type;
-
+    public string Lexeme { get; set; } = lexeme;
+    public string Type { get; set; } = type;
+    public string? Index { get; set; } = index.ToString();
+    public string NumLine { get; set; } = numLine.ToString();
 
     public override string ToString()
     {
-        return $"{Lexeme,-10} {Type,-10}";
+        return $"{NumLine, -3} {Lexeme,-10} {Type,-10}, {Index: -5}";
     }
 }

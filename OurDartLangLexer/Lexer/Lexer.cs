@@ -12,7 +12,8 @@ public class Lexer
     private readonly HashSet<int> _errorStates = LexerConfiguration.GetErrorStates();
     private int _numLine = 1;
     private int _numChar = -1; // Нумерація з 0
-    public List<Token> TokenTable { get; set; } = new List<Token>();
+    public List<Token> TokenTable { get; set; } = new();
+    public SymbolTable SymbolTable { get; set; } = new();
 
     // Initialize the configurations from LexerConfiguration class
 
@@ -41,7 +42,7 @@ public class Lexer
                 }
                 else if (_errorStates.Contains(state))
                 {
-                    TokenTable.Add(new Token(lexeme.ToString(), "error"));
+                    TokenTable.Add(new Token(_numLine, lexeme.ToString(), "error"));
                     lexeme.Clear();
                     state = 0;
                 }
@@ -51,6 +52,7 @@ public class Lexer
                     {
                         continue;
                     }
+
                     lexeme.Append(charSymbol);
                 }
             }
@@ -82,19 +84,19 @@ public class Lexer
     /// </summary>
     /// <param name="state">Поточний стан, передається як ref</param>
     /// <param name="lexeme">Поточний лексема</param>
-    /// <param name="input">Поточний символ</param>
-    private void Processing(ref int state, StringBuilder lexeme, string input)
+    /// <param name="token">Поточний символ</param>
+    private void Processing(ref int state, StringBuilder lexeme, string token)
     {
         switch (state)
         {
             case 12 or 22 or 24:
-                ProcessKeywordOrIdentifierOrNumber(ref state, lexeme, input);
+                ProcessKeywordOrIdentifierOrNumber(ref state, lexeme, token);
                 break;
             case 31 or 63 or 93:
                 ProcessOperatorOrSymbol(ref state, lexeme);
                 break;
             case 32 or 41 or 71 or 81 or 92:
-                ProcessCompoundOperatorOrSymbol(ref state, lexeme, input);
+                ProcessCompoundOperatorOrSymbol(ref state, lexeme, token);
                 break;
             case 51:
                 ProcessEndOfLine(ref state);
@@ -122,11 +124,11 @@ public class Lexer
         state = 0;
     }
 
-    private void ProcessCompoundOperatorOrSymbol(ref int state, StringBuilder lexeme, string input)
+    private void ProcessCompoundOperatorOrSymbol(ref int state, StringBuilder lexeme, string token)
     {
-        lexeme.Append(input);
+        lexeme.Append(token);
         string tokenType = GetTokenType(state, lexeme.ToString());
-        TokenTable.Add(new Token(lexeme.ToString(), tokenType));
+        TokenTable.Add(new Token(_numLine, lexeme.ToString(), tokenType));
         lexeme.Clear();
         state = 0;
     }
@@ -134,20 +136,61 @@ public class Lexer
     private void ProcessOperatorOrSymbol(ref int state, StringBuilder lexeme)
     {
         var tokenType = GetTokenType(state, lexeme.ToString());
-        TokenTable.Add(new Token(lexeme.ToString(), tokenType));
+        TokenTable.Add(new Token(_numLine, lexeme.ToString(), tokenType));
         lexeme.Clear();
         state = 0;
-        _numChar = PutCharBack(_numChar);
+        _numChar = PutCharBack(_numChar); //зірочка
     }
 
     private void ProcessKeywordOrIdentifierOrNumber(ref int state, StringBuilder lexeme, string token)
     {
         var tokenType = GetTokenType(state, lexeme.ToString());
-        TokenTable.Add(new Token(lexeme.ToString(), tokenType));
+        switch (tokenType)
+        {
+            case "keyword":
+            {
+                int indx = IndexIdConst(state, lexeme.ToString());
+                TokenTable.Add(
+                    new Token(_numLine, lexeme.ToString(), tokenType, indx));
+                break;
+            }
+            case "identifier":
+            {
+                int indx = IndexIdConst(state, lexeme.ToString());
+                TokenTable.Add(new Token(_numLine, lexeme.ToString(), tokenType, indx));
+                break;
+            }
+            case "number":
+            {
+                int indx = IndexIdConst(state, lexeme.ToString());
+                TokenTable.Add(new Token(_numLine, lexeme.ToString(), tokenType, indx));
+                break;
+            }
+        }
+
         lexeme.Clear();
         state = 0;
-        _numChar = PutCharBack(_numChar);
+        _numChar = PutCharBack(_numChar); //зірочка
     }
+
+    private int IndexIdConst(int state, string lexeme)
+    {
+        if (state == 12)
+        {
+            return SymbolTable.GetOrAddIdentifier(lexeme);
+        }
+
+        if (state == 22 || state == 24)
+        {
+            return SymbolTable.GetOrAddConstant(lexeme,
+                FindToken(lexeme).Type);
+        }
+
+        throw new Exception($"Невідомий тип лексеми {_numLine} рядок, {lexeme} лексема");
+    }
+
+    private Token FindToken(string lexeme)
+        => TokenTable.Find(token => token.Lexeme == lexeme);
 
     private int PutCharBack(int numberOfChar)
         => numberOfChar - 1;
