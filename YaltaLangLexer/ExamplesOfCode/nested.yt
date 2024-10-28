@@ -1,0 +1,12 @@
+main {
+    int counter = 0;
+
+    while (counter < 3) {
+        when (counter == 2) {
+            print("Counter reached 2");
+        } fallback {
+            print("Counting...");
+        }
+        counter = counter + 1;
+    }
+}

@@ -1,7 +1,12 @@
-namespace OurDartLangLexer.Extensions;
+namespace YaltaLangLexer.Extensions;
 
 public static class CharExtensions
 {
+    /// <summary>
+    /// Метод розширення для класифікації символів
+    /// </summary>
+    /// <param name="ch"></param>
+    /// <returns></returns>
     public static string ClassOfChar(this char ch)
     {
         return ch switch

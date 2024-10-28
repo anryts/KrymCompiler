@@ -1,4 +1,6 @@
-namespace OurDartLangLexer.Lexer;
+using YaltaLangLexer.Extensions;
+
+namespace YaltaLangLexer.Lexer;
 
 public static class LexerConfiguration
 {

@@ -1,0 +1,34 @@
+main {
+    main {
+        int a = -5;
+        double b = 10.5;
+        bool logic = true;
+
+        int sum = a + 10;
+        double diff = b - 5.5;
+        double prod = a * b;
+        double div = b / 2;
+        int power = a ^ 3;
+
+        bool isequal = (a == -5);
+        bool notequal = (b != 10.0);
+        bool greater = (a > -5);
+        bool greateroequal = (a >= -5);
+        bool less = (b < 10.5);
+        bool lessorequal = (b <= 10.5);
+
+        when (logic) {
+            print(a);
+        } fallback {
+            print(b);
+        }
+
+        while (a < 0) {
+            print(i);
+        }
+
+        int numb = read();
+        print(numb);
+    }
+
+}

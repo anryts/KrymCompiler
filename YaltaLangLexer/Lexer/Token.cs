@@ -1,4 +1,4 @@
-namespace OurDartLangLexer.Lexer;
+namespace YaltaLangLexer.Lexer;
 
 public struct Token(int numLine, string lexeme, string type, int? index = null)
 {

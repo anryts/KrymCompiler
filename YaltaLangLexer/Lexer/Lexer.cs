@@ -1,5 +1,6 @@
 using System.Text;
-using OurDartLangLexer.Extensions;
+using YaltaLangLexer.Extensions;
+using YaltaLangLexer.Lexer;
 
 namespace OurDartLangLexer.Lexer;
 
@@ -14,6 +15,7 @@ public class Lexer
     private int _numChar = -1; // Нумерація з 0
     public List<Token> TokenTable { get; set; } = new();
     public SymbolTable SymbolTable { get; set; } = new();
+    public List<string> ErrorTable { get; set; } = new();
 
     // Initialize the configurations from LexerConfiguration class
 
@@ -36,15 +38,14 @@ public class Lexer
                 string classCh = charSymbol.ClassOfChar();
                 state = NextState(state, classCh);
 
-                if (_finalStates.Contains(state))
+                // Перевірка на помилкові стани йде першою, щоб відразу очистити лексему
+                if (_errorStates.Contains(state))
+                {
+                    ProcessError(ref state, lexeme);
+                }
+                else if (_finalStates.Contains(state))
                 {
                     Processing(ref state, lexeme, charSymbol.ToString());
-                }
-                else if (_errorStates.Contains(state))
-                {
-                    TokenTable.Add(new Token(_numLine, lexeme.ToString(), "error"));
-                    lexeme.Clear();
-                    state = 0;
                 }
                 else
                 {
@@ -63,6 +64,23 @@ public class Lexer
         {
             Console.WriteLine($"Lexer: Аварійне завершення програми з кодом {e.Message}");
         }
+    }
+
+    private void ProcessError(ref int state, StringBuilder lexeme)
+    {
+        if (state == 100)
+        {
+            ErrorTable.Add($"{_numLine}: невідомий символ {lexeme}");
+        }
+
+        if (state == 109)
+        {
+            ErrorTable.Add($"{_numLine}: Очікувався символ =, але знайдено {lexeme}");
+        }
+
+        TokenTable.Add(new Token(_numLine, lexeme.ToString(), "error"));
+        lexeme.Clear();
+        state = 0;
     }
 
     private int NextState(int state, string classCh)
@@ -116,7 +134,10 @@ public class Lexer
 
 
     private void ProcessComment(ref int state)
-        => state = 0;
+    {
+        state = 0;
+        _numLine++;
+    }
 
     private void ProcessEndOfLine(ref int state)
     {
@@ -149,20 +170,26 @@ public class Lexer
         {
             case "keyword":
             {
-                int indx = IndexIdConst(state, lexeme.ToString());
+                int indx = IndexIdConst(state, lexeme.ToString(), tokenType);
                 TokenTable.Add(
                     new Token(_numLine, lexeme.ToString(), tokenType, indx));
                 break;
             }
             case "identifier":
             {
-                int indx = IndexIdConst(state, lexeme.ToString());
+                int indx = IndexIdConst(state, lexeme.ToString(), tokenType);
                 TokenTable.Add(new Token(_numLine, lexeme.ToString(), tokenType, indx));
                 break;
             }
-            case "number":
+            case "intnum" or "realnum" or "boolval":
             {
-                int indx = IndexIdConst(state, lexeme.ToString());
+                int indx = IndexIdConst(state, lexeme.ToString(), tokenType);
+                TokenTable.Add(new Token(_numLine, lexeme.ToString(), tokenType, indx));
+                break;
+            }
+            case "id":
+            {
+                int indx = IndexIdConst(state, lexeme.ToString(), tokenType);
                 TokenTable.Add(new Token(_numLine, lexeme.ToString(), tokenType, indx));
                 break;
             }
@@ -173,7 +200,7 @@ public class Lexer
         _numChar = PutCharBack(_numChar); //зірочка
     }
 
-    private int IndexIdConst(int state, string lexeme)
+    private int IndexIdConst(int state, string lexeme, string tokenType)
     {
         if (state == 12)
         {
@@ -183,7 +210,7 @@ public class Lexer
         if (state == 22 || state == 24)
         {
             return SymbolTable.GetOrAddConstant(lexeme,
-                FindToken(lexeme).Type);
+                tokenType);
         }
 
         throw new Exception($"Невідомий тип лексеми {_numLine} рядок, {lexeme} лексема");

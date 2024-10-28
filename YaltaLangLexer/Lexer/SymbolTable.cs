@@ -1,4 +1,4 @@
-namespace OurDartLangLexer.Lexer;
+namespace YaltaLangLexer.Lexer;
 
 public class SymbolTable
 {

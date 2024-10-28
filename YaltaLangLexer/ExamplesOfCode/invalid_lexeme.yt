@@ -1,0 +1,5 @@
+main {
+    int validVar = 10;
+    double invalid@Var = 5.5;
+    bool check# = false;
+}
