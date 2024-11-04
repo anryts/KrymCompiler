@@ -24,16 +24,16 @@ public static class OutputHandler
             Console.WriteLine("-----------------------------------");
         }
 
-        Console.WriteLine("Line  Lexeme     Token Type");
+        Console.WriteLine("Line  Lexeme\tToken Type  ID");
         Console.WriteLine("-----------------------------------");
         foreach (var entry in tableOfSymbols)
         {
-            Console.WriteLine($"{entry.NumLine}\t{entry.Lexeme}\t{entry.Type}");
+            Console.WriteLine(entry.ToString());
         }
 
         Console.WriteLine("-----------------------------------");
-        Console.WriteLine("Symbol Table:");
-        Console.WriteLine("ID  Lexeme");
+        Console.WriteLine("IdTable:");
+        Console.WriteLine("ID\tName");
         Console.WriteLine("-----------------------------------");
         foreach (var entry in symbolTable.Identifiers)
         {
@@ -67,19 +67,6 @@ public static class OutputHandler
         {
             using (StreamWriter writer = new StreamWriter(filePath))
             {
-                if (ErrorTable.Count > 0)
-                {
-                    Console.WriteLine("Errors:");
-                    Console.WriteLine("Line  Error");
-                    Console.WriteLine("-----------------------------------");
-                    foreach (var error in ErrorTable)
-                    {
-                        Console.WriteLine(error);
-                    }
-
-                    Console.WriteLine("-----------------------------------");
-                }
-
                 writer.WriteLine("Line  Lexeme     Token Type");
                 writer.WriteLine("-----------------------------------");
                 foreach (var entry in tableOfSymbols)
@@ -88,8 +75,8 @@ public static class OutputHandler
                 }
 
                 writer.WriteLine("-----------------------------------");
-                writer.WriteLine("Symbol Table:");
-                writer.WriteLine("ID  Lexeme");
+                writer.WriteLine("Id Table:");
+                writer.WriteLine("ID  Name");
                 writer.WriteLine("-----------------------------------");
                 foreach (var entry in symbolTable.Identifiers)
                 {

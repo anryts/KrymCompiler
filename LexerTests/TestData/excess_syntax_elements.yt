@@ -1,0 +1,6 @@
+main {
+    int c d = 6;
+    bool flag;
+    print(c);
+    print(d);
+}

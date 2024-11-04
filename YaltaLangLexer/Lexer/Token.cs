@@ -9,6 +9,6 @@ public struct Token(int numLine, string lexeme, string type, int? index = null)
 
     public override string ToString()
     {
-        return $"{NumLine, -3} {Lexeme,-10} {Type,-10}, {Index: -5}";
+        return $"{NumLine, -3} {Lexeme,-10} {Type,-12} {Index,-15}";
     }
 }

@@ -17,6 +17,9 @@ public class Lexer
     public SymbolTable SymbolTable { get; set; } = new();
     public List<string> ErrorTable { get; set; } = new();
 
+    //TODO: make a result object
+    public string ErroMessage { get; set; }
+
     // Initialize the configurations from LexerConfiguration class
 
     /// <summary>
@@ -41,7 +44,8 @@ public class Lexer
                 // Перевірка на помилкові стани йде першою, щоб відразу очистити лексему
                 if (_errorStates.Contains(state))
                 {
-                    ProcessError(ref state, lexeme);
+                    int charPosition = FindCurrentPositionRelativeToCurrentLine(input, _numChar);
+                    ProcessError(ref state, lexeme, charSymbol.ToString(), charPosition);
                 }
                 else if (_finalStates.Contains(state))
                 {
@@ -57,20 +61,20 @@ public class Lexer
                     lexeme.Append(charSymbol);
                 }
             }
-
             Console.WriteLine("Lexer: Лексичний аналіз завершено успішно");
         }
         catch (Exception e)
         {
             Console.WriteLine($"Lexer: Аварійне завершення програми з кодом {e.Message}");
+            ErroMessage = e.Message;
         }
     }
 
-    private void ProcessError(ref int state, StringBuilder lexeme)
+    private void ProcessError(ref int state, StringBuilder lexeme, string charSymbol, int charPosition)
     {
         if (state == 100)
         {
-            ErrorTable.Add($"{_numLine}: невідомий символ {lexeme}");
+            ErrorTable.Add($"{_numLine}: невідомий символ {charSymbol} на позиції {charPosition}");
         }
 
         if (state == 109)
@@ -78,9 +82,8 @@ public class Lexer
             ErrorTable.Add($"{_numLine}: Очікувався символ =, але знайдено {lexeme}");
         }
 
-        TokenTable.Add(new Token(_numLine, lexeme.ToString(), "error"));
-        lexeme.Clear();
-        state = 0;
+        var token = lexeme.ToString();
+        TokenTable.Add(new Token(_numLine, token.Length == 0 ? charSymbol:token, "error"));
     }
 
     private int NextState(int state, string classCh)
@@ -170,9 +173,8 @@ public class Lexer
         {
             case "keyword":
             {
-                int indx = IndexIdConst(state, lexeme.ToString(), tokenType);
                 TokenTable.Add(
-                    new Token(_numLine, lexeme.ToString(), tokenType, indx));
+                    new Token(_numLine, lexeme.ToString(), tokenType));
                 break;
             }
             case "identifier":
@@ -221,4 +223,22 @@ public class Lexer
 
     private int PutCharBack(int numberOfChar)
         => numberOfChar - 1;
+    
+    private int FindCurrentPositionRelativeToCurrentLine(string input, int numChar)
+    {
+        int position = 0;
+        for (int i = 0; i < numChar; i++)
+        {
+            if (input[i] == '\n')
+            {
+                position = 0;
+            }
+            else
+            {
+                position++;
+            }
+        }
+
+        return ++position;
+    }
 }
