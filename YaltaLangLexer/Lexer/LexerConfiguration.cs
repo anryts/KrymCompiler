@@ -100,11 +100,11 @@ public static class LexerConfiguration
 
     public static HashSet<int> GetFinalStates()
     {
-        return new HashSet<int> { 12, 22, 24, 31, 32, 41, 51, 62, 63, 71, 81, 92, 93, 100, 109 };
+        return [12, 22, 24, 31, 32, 41, 51, 62, 63, 71, 81, 92, 93, 100, 109];
     }
 
     public static HashSet<int> GetErrorStates()
     {
-        return new HashSet<int> { 100, 109 };
+        return [100, 109];
     }
 }
