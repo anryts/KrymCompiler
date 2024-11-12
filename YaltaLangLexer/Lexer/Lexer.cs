@@ -123,7 +123,7 @@ public class Lexer
                 ProcessEndOfLine(ref state);
                 break;
             case 62:
-                ProcessComment(ref state);
+                ProcessComment(ref state, lexeme);
                 break;
             default:
                 break;
@@ -136,9 +136,11 @@ public class Lexer
             : _finalStateTokens[state];
 
 
-    private void ProcessComment(ref int state)
+    private void ProcessComment(ref int state, StringBuilder lexeme)
     {
         state = 0;
+        _numChar = PutCharBack(_numChar); //зірочка
+        lexeme.Clear();
         _numLine++;
     }
 
@@ -186,13 +188,13 @@ public class Lexer
             case "intnum" or "realnum" or "boolval":
             {
                 int indx = IndexIdConst(state, lexeme.ToString(), tokenType);
-                TokenTable.Add(new Token(_numLine, lexeme.ToString(), tokenType, indx));
+                //TokenTable.Add(new Token(_numLine, lexeme.ToString(), tokenType, indx));
                 break;
             }
             case "id":
             {
                 int indx = IndexIdConst(state, lexeme.ToString(), tokenType);
-                TokenTable.Add(new Token(_numLine, lexeme.ToString(), tokenType, indx));
+                //TokenTable.Add(new Token(_numLine, lexeme.ToString(), tokenType, indx));
                 break;
             }
         }

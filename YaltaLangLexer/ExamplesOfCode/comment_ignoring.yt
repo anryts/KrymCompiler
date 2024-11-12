@@ -1,0 +1,4 @@
+main {
+    int a1 = 1;
+    // i'm comment and i'm ignored
+}
