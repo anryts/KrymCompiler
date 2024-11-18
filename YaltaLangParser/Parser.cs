@@ -5,9 +5,10 @@ namespace YaltaLangParser;
 
 public class Parser
 {
-    public int NumLine = 1;
+    private int _numLine = 1;
     private readonly Lexer _lexer;
     private readonly int _lengthOfSymbolTable;
+    private
 
     public Parser(Lexer lexer)
     {
@@ -17,12 +18,64 @@ public class Parser
 
     public void ParseProgram()
     {
-        //TODO обробка таблиці від лексера
-        //TODO Спершу ми читаємо правило main -> {StatementList}
-        ParseToken("main", "keyword");
-        throw new NotImplementedException();
+        try
+        {
+            //TODO обробка таблиці від лексера
+            //TODO Спершу ми читаємо правило main -> StatementBlock
+            ParseToken("main", "keyword");
 
-        //TODO імплементація таблиці розбору
+            //TODO Потім ми читаємо правило StatementBlock -> { StatementList }
+            ParseStatementBlock();
+            Console.WriteLine("Parser: Синтаксичний аналіз завершено успішно");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"Parser: Синтаксичний аналіз завершено з помилкою на рядку {_numLine}, {e.Message}");
+        }
+    }
+
+    private void ParseStatementBlock()
+    {
+        ParseToken("{", "symbol");
+        ParseStatementList();
+        ParseToken("}", "symbol");
+    }
+
+    private void ParseStatementList()
+    {
+        while (_lexer.TokenTable[_lengthOfSymbolTable].Lexeme != "}")
+        {
+            ParseStatement();
+        }
+    }
+
+    private void ParseStatement()
+    {
+        //TODO Statement -> PrintStatement
+        //                  | AssignmentStatement
+        //                  | IfStatement
+        //                  | WhileStatement
+        //                  | PrintStatement
+
+        switch (_lexer.TokenTable[].Lexeme)
+        {
+            case "print":
+                ParsePrintStatement();
+                break;
+            case "if":
+                ParseIfStatement();
+                break;
+            case "while":
+                ParseWhileStatement();
+                break;
+            default:
+                ParseAssignmentStatement();
+                break;
+        }
+        {
+
+        }
+
     }
 
     /// <summary>
@@ -33,6 +86,5 @@ public class Parser
     /// <param name="token"></param>
     private void ParseToken(string lexeme, string token)
     {
-        
     }
 }

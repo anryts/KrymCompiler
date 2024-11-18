@@ -1,0 +1,25 @@
+Line  Lexeme     Token Type
+-----------------------------------
+1	main	keyword
+1	{	braces_op
+2	int	keyword
+2	validvar	id
+2	=	assign_op
+2	10	intnum
+2	;	punct
+3	double	keyword
+3	invalid	id
+3		error
+-----------------------------------
+Id Table:
+ID  Name
+-----------------------------------
+1	validvar
+2	invalid
+-----------------------------------
+Constant Table:
+ID  Lexeme  Type
+-----------------------------------
+1	10	intnum
+-----------------------------------
+Output written to the file successfully.
