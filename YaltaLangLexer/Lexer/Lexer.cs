@@ -1,4 +1,5 @@
 using System.Text;
+using Common;
 using YaltaLangLexer.Extensions;
 using YaltaLangLexer.Lexer;
 

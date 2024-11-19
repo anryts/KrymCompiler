@@ -15,3 +15,5 @@ var sourceCodeArr = File.ReadAllText(filePath);
 lexer.ProcessInput(sourceCodeArr);
 
 OutputHandler.WriteToConsole(lexer.TokenTable, lexer.SymbolTable, lexer.ErrorTable);
+
+//TODO: test a parser

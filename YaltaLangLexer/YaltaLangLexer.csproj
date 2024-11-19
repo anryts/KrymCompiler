@@ -8,4 +8,8 @@
     <RootNamespace>OurDartLangLexer</RootNamespace>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Common\Common.csproj" />
+  </ItemGroup>
+
 </Project>

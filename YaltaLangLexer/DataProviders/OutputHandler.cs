@@ -1,3 +1,4 @@
+using Common;
 using YaltaLangLexer.Lexer;
 
 namespace YaltaLangLexer.DataProviders;

@@ -1,4 +1,4 @@
-namespace YaltaLangLexer.Lexer;
+namespace Common;
 
 public struct Token(int numLine, string lexeme, string type, int? index = null)
 {
