@@ -2,9 +2,9 @@ namespace Common;
 
 public record Variable(string Name, string Type, string Value)
 {
-    public string Name { get; set; }
-    public string Type { get; set; }
-    public string Value { get; set; }
+    public string Name { get; set; } = Name;
+    public string Type { get; set; } = Type;
+    public string Value { get; set; } = Value;
 
     public override string ToString()
     {

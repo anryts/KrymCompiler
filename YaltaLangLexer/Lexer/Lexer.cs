@@ -189,13 +189,13 @@ public class Lexer
             case "intnum" or "realnum" or "boolval":
             {
                 int indx = IndexIdConst(state, lexeme.ToString(), tokenType);
-                //TokenTable.Add(new Token(_numLine, lexeme.ToString(), tokenType, indx));
+                TokenTable.Add(new Token(_numLine, lexeme.ToString(), tokenType, indx));
                 break;
             }
             case "id":
             {
                 int indx = IndexIdConst(state, lexeme.ToString(), tokenType);
-                //TokenTable.Add(new Token(_numLine, lexeme.ToString(), tokenType, indx));
+                TokenTable.Add(new Token(_numLine, lexeme.ToString(), tokenType, indx));
                 break;
             }
         }
