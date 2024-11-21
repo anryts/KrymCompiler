@@ -11,7 +11,7 @@ public class Parser
     private readonly Lexer _lexer;
     private readonly int _lengthOfSymbolTable;
     private readonly List<Variable> _variableTable = new();
-    private int _ident = 0;
+    private int _ident = -1; //для відступів
 
     public Parser(Lexer lexer)
     {
@@ -47,10 +47,13 @@ public class Parser
 
     private void ParseStatementList()
     {
+        NextIdent();
+        Console.WriteLine(new string(' ', _ident) + "Parser: StatementList");
         while (_lexer.TokenTable[_currentTokenIndex].Lexeme != "}")
         {
             ParseStatement(_lexer.TokenTable[_currentTokenIndex]);
         }
+        PrevIdent();
     }
 
     private void ParseStatement(Token token)
@@ -66,7 +69,10 @@ public class Parser
             case "int":
             case "double":
             case "bool":
+                NextIdent();
+                Console.WriteLine(new string(' ', _ident) + "Parser: DeclarationStatement");
                 ParseDeclarationStatement();
+                PrevIdent();
                 break;
             case "print":
                 throw new NotImplementedException();
@@ -97,13 +103,13 @@ public class Parser
     {
         //Declaration = Type Id
         var type = _lexer.TokenTable[_currentTokenIndex].Lexeme;
+        NextIdent();
         ParseToken(type, "keyword");
         var variableName = _lexer.TokenTable[_currentTokenIndex].Lexeme;
         if (_variableTable.Any(v => v.Name == variableName))
         {
             throw new Exception($"Змінна {variableName} вже була оголошена");
         }
-
         //ну шо це таке, треба буде виправити
         ParseToken(variableName, "id");
         ParseToken("=", "assign_op");
@@ -111,6 +117,7 @@ public class Parser
         //Console.WriteLine($"Parser: DeclarationStatement: {type} {variableName} = {value.value}");
 
         _variableTable.Add(new Variable(variableName, type, "null"));
+        PrevIdent();
     }
 
     /// <summary>
@@ -121,6 +128,7 @@ public class Parser
     /// <param name="token"></param>
     private void ParseToken(string lexeme, string token)
     {
+        NextIdent();
         if (_currentTokenIndex >= _lengthOfSymbolTable)
         {
             throw new Exception("Неочікуваний кінець програми");
@@ -134,10 +142,11 @@ public class Parser
                 $"очікувалось {lexeme} типу {token}");
         }
 
-        Console.WriteLine(
-            $"Parser: ParseToken: В рядку {_currentTokenIndex} токен {_lexer.TokenTable[_currentTokenIndex].Lexeme} " +
+        Console.WriteLine(new string(' ', _ident) +
+            $"Parser: ParseToken: В рядку {_lexer.TokenTable[_currentTokenIndex].NumLine} токен {_lexer.TokenTable[_currentTokenIndex].Lexeme} " +
             $"типу {_lexer.TokenTable[_currentTokenIndex].Type} було розпізнано");
         _currentTokenIndex++;
+        PrevIdent();
     }
 
     private void ParseAssignmentStatement()
@@ -145,6 +154,8 @@ public class Parser
         //Assign = Id "=" Expression
         //check if the variable is in the table
         //wtf is going on here
+        NextIdent();
+        Console.WriteLine(new string(' ', _ident) + "Parser: AssignmentStatement");
         //TODO: look at this monster
         var variable = _variableTable.FirstOrDefault(v => v.Name == _lexer.TokenTable[_currentTokenIndex].Lexeme)
                        ?? throw new Exception($"Змінна {_lexer.TokenTable[_currentTokenIndex].Lexeme} не була оголошена");
@@ -158,10 +169,11 @@ public class Parser
         //     throw new Exception($"Cannot assign {expression.type} to {variable.Type}");
         // }
 
-        Console.WriteLine($"Parser: AssignmentStatement: {variable.Name} = {expression.value}");
+        //Console.WriteLine($"Parser: AssignmentStatement: {variable.Name} = {expression.value}");
         //rewrite the value of the variable
 
         variable.Value = expression.value;
+        PrevIdent();
     }
 
     /// <summary>
@@ -170,13 +182,7 @@ public class Parser
     /// <returns>a tuple, first - type, second - value</returns>
     private (string type, string value) ParseExpression()
     {
-        //Expression = ArthnExpr | BoolExpr
-        // var currentToken = _lexer.TokenTable[_currentTokenIndex];
-        // if (IsBooleanOperator(currentToken.Lexeme))
-        // {
-        //     return ParseBoolExpr();
-        // }
-
+        //Expression = ArthmExpr | BoolExpr
         return ParseArthmExpr();
     }
 
@@ -194,6 +200,8 @@ public class Parser
 
     private (string type, string value) ParseArthmExpr()
     {
+        NextIdent();
+        Console.WriteLine(new string(' ', _ident) + "Parser: ArthmExpr");
         ParseTerm();
 
         while (_lexer.TokenTable[_currentTokenIndex].Lexeme == "+" ||
@@ -203,6 +211,7 @@ public class Parser
             ParseTerm();
         }
 
+        PrevIdent();
         return ("", "");
 
         //ArthmExpr = Term | ArthmExpr "+" Term | ArthmExpr "-" Term
@@ -231,15 +240,17 @@ public class Parser
     private void ParseTerm()
     {
         //Term = Factor | Term "*" Factor | Term "/" Factor
+        NextIdent();
+        Console.WriteLine(new string(' ', _ident) + "Parser: Term");
         var currentToken = _lexer.TokenTable[_currentTokenIndex];
         //якщо ми зустріли символ ;, то ми виходимо з цього методу
-
         ParseFactor();
-        while (currentToken.Lexeme == "*" || currentToken.Lexeme == "/")
+        while (_lexer.TokenTable[_currentTokenIndex].Lexeme is "*" or "/")
         {
-            ParseToken(currentToken.Lexeme, currentToken.Type);
+            ParseToken(_lexer.TokenTable[_currentTokenIndex].Lexeme, _lexer.TokenTable[_currentTokenIndex].Type);
             ParseFactor();
         }
+        PrevIdent();
     }
 
     private void ParseFactor()
@@ -247,6 +258,8 @@ public class Parser
         //Factor = Id | Number | "(" ArthmExpr ")"
         //маєш три опції, або змінна, або число
         var currentToken = _lexer.TokenTable[_currentTokenIndex];
+        NextIdent();
+        Console.WriteLine(new string(' ', _ident) + "Parser: Factor");
         if (currentToken.Type == "id")
         {
             if (_variableTable.All(v => v.Name != currentToken.Lexeme))
@@ -255,17 +268,13 @@ public class Parser
             }
 
             ParseToken(currentToken.Lexeme, "id");
-            Console.WriteLine($"Parser: Factor: {currentToken.Lexeme}");
-            _currentTokenIndex++;
-            return;
+            //_currentTokenIndex++;
         }
 
         if (currentToken.Type == "intnum" || currentToken.Lexeme == "double")
         {
             ParseToken(currentToken.Lexeme, currentToken.Type);
-            Console.WriteLine($"Parser: Factor: {currentToken.Lexeme}");
-            _currentTokenIndex++;
-            return;
+            //_currentTokenIndex++;
         }
 
         if (currentToken.Lexeme == "(")
@@ -273,10 +282,8 @@ public class Parser
             ParseToken("(", "brackets_op");
             ParseExpression();
             ParseToken(")", "brackets_op");
-            return;
         }
-
-        throw new Exception($"Unexpected token: {currentToken.Lexeme}");
+        PrevIdent();
     }
 
     private void NextIdent()
