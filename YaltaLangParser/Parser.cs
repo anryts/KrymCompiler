@@ -286,29 +286,7 @@ public class Parser
         }
 
         PrevIdent();
-        return ("", "");
-
-        //ArthmExpr = Term | ArthmExpr "+" Term | ArthmExpr "-" Term
-        // (string, string) result = ("", "");
-        // var currentToken = _lexer.TokenTable[_currentTokenIndex];
-        // //якщо ми зустріли символ ;, то ми виходимо з цього методу
-        // while (currentToken.Lexeme != ";")
-        // {
-        //     if (currentToken.Lexeme == "+" || currentToken.Lexeme == "-")
-        //     {
-        //         ParseToken(currentToken.Lexeme, "add_op");
-        //     }
-        //
-        //     //Повідомляємо про помилку із типами у самому методі ParseTerm
-        //     var term = ParseTerm();
-        //     Console.WriteLine($"Parser: ArthmExpr: {term}");
-        //     currentToken = _lexer.TokenTable[_currentTokenIndex];
-        // }
-        //
-        // _currentTokenIndex++;
-        //
-        // //TODO: потрібно визначити тип виразу і його значення
-        // return result;
+        return ("", ""); //TODO: змінити на щось нормальне
     }
 
     private void ParseTerm()
@@ -346,7 +324,7 @@ public class Parser
             //_currentTokenIndex++;
         }
 
-        if (currentToken.Type == "intnum" || currentToken.Lexeme == "realnum")
+        if (currentToken.Type == "intnum" || currentToken.Type == "realnum")
         {
             ParseToken(currentToken.Lexeme, currentToken.Type);
             //_currentTokenIndex++;
