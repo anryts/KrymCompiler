@@ -1,5 +1,4 @@
 main {
-      var x = true;
-        var y = false;
-        var z = x || y && (x != y);
+      bool x = false;
+      bool notequal = (100 != 10.0);
 }
