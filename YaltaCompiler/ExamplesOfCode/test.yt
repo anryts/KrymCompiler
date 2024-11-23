@@ -1,4 +1,5 @@
 main {
-      bool x = false;
-      bool notequal = (100 != 10.0);
+      print (55555);
+      int a = 5;
+      read (a);
 }

@@ -1,7 +1,5 @@
-using System.Text;
 using Common;
 using OurDartLangLexer.Lexer;
-using YaltaLangLexer.Lexer;
 
 namespace YaltaLangParser;
 
@@ -76,7 +74,26 @@ public class Parser
                 PrevIdent();
                 break;
             case "print":
-                throw new NotImplementedException();
+                NextIdent();
+                Console.WriteLine(new string(' ', _ident) + "Parser: PrintStatement");
+                ParseToken("print", "keyword");
+                ParseToken("(", "brackets_op");
+                ParseExpression();
+                ParseToken(")", "brackets_op");
+                ParseToken(";", "punct");
+                PrevIdent();
+                break;
+            case "read":
+                NextIdent();
+                Console.WriteLine(new string(' ', _ident) + "Parser: ReadStatement");
+                ParseToken("read", "keyword");
+                ParseToken("(", "brackets_op");
+                ParseExpression(); //TODO: для читання не дуже підходить,
+                                   //ми можемо щось типу такого написати read(123),
+                                   //що буде неправильно, але це поки що не важливо
+                ParseToken(")", "brackets_op");
+                ParseToken(";", "punct");
+                PrevIdent();
                 break;
             case ";":
                 ParseToken(";", "punct");
