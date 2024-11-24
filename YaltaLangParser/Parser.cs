@@ -227,7 +227,7 @@ public class Parser
 
         if (right == "")
         {
-            if (!CheckCompatibility(left, type))
+            if (!CheckCompatibility(left, _currentType))
             {
                 throw new Exception($"Тип виразу {left} не сумісний");
             }
@@ -248,7 +248,7 @@ public class Parser
             throw new Exception($"Тип виразу {right} не сумісний");
         }
 
-        return (type, "");
+        return (_currentType, "");
     }
 
     private string ParseRelationalExpr()
@@ -262,10 +262,15 @@ public class Parser
         if (currentToken.Lexeme is "==" or "!=" or "<" or "<=" or ">" or ">=")
         {
             ParseToken(currentToken.Lexeme, currentToken.Type);
-            right = ParseArthmExpr("").type;
+            right = ParseArthmExpr("void").type;
         }
 
         PrevIdent();
+        //ситуація, маєш 5 < 56 -> ну це ж буль, а між ними якийсь із операторів
+        if (left.type.Equals(right))
+        {
+            return "bool"; //TODO: change this
+        }
         return left.type;
     }
 
