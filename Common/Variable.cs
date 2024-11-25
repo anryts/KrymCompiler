@@ -1,6 +1,6 @@
 namespace Common;
 
-public record Variable(string Name, string Type, string Value)
+public record struct Variable(string Name, string Type, string Value)
 {
     public string Name { get; set; } = Name;
     public string Type { get; set; } = Type;
