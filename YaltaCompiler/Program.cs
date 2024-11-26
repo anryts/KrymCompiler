@@ -5,7 +5,7 @@ using YaltaLangParser;
 
 string projectDirectory = Directory.GetParent(Directory.GetCurrentDirectory()).Parent.Parent.FullName;
 string fileName = "test.yt";
-string filePath = Path.Combine(projectDirectory, "ExamplesOfCode", fileName);
+string filePath = Path.Combine(projectDirectory, "ExamplesOfCode", "ForParserTests", fileName);
 
 if (!File.Exists(filePath)) throw new Exception("File not found: " + filePath);
 

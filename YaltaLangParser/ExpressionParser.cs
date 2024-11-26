@@ -2,6 +2,7 @@
 using OurDartLangLexer.Lexer;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Reflection.Metadata;
 using System.Text;
@@ -13,7 +14,6 @@ public class ExpressionParser
 {
     private readonly Lexer _lexer;
     private TokenParser _tokenParser;
-    private List<Variable> variables = new List<Variable>();
 
     public ExpressionParser(Lexer lexer, TokenParser tokenParser)
     {
@@ -23,48 +23,151 @@ public class ExpressionParser
 
     public (string type, string value) ParseExpression(string exptectedType)
     {
+
         ParserOutput.IncreaseIndent();
-        ParserOutput.WriteLine("Parser: Expression");
-        var result = IsBooleanExpression() ? ParseBooleanExpression(exptectedType) : ParseArithmeticExpression(exptectedType);
+        ParserOutput.WriteColoredLine("Parser: Expression", ConsoleColor.DarkCyan);
+        (string type, string value) result = ("", "");
+        if (!string.IsNullOrWhiteSpace(exptectedType) && string.Equals(exptectedType, "bool"))
+        {
+            result = ParseBooleanExpression(exptectedType);
+        }
+        else
+        {
+            result = IsBooleanExpression() ? ParseBooleanExpression(exptectedType) : ParseArithmeticExpression(exptectedType);
+        }
+
+        ParserOutput.WriteColoredLine("Parser: Expression", ConsoleColor.DarkCyan);
         ParserOutput.DecreaseIndent();
-        
         return result;
     }
 
     private (string Type, string Value) ParseBooleanExpression(string expectedType)
     {
         ParserOutput.IncreaseIndent();
-        ParserOutput.WriteLine("Parser: BooleanExpression");
+        ParserOutput.WriteColoredLine("Parser: BooleanExpression", ConsoleColor.DarkYellow);
         // Parse boolean expression logic...
         var currentToken = _lexer.TokenTable[GlobalVars.CurrentTokenIndex];
-        var left = ParseRelationalExpr();
-        string right = "";
+        var leftType = ParseRelationalExpr();
+        string rightType = "";
         while (currentToken.Lexeme is "&&" or "||")
         {
             _tokenParser.ParseToken(currentToken.Lexeme, currentToken.Type);
-            right = ParseRelationalExpr();
+            rightType = ParseRelationalExpr();
 
             //TODO: об'єднання булевих виразів і ще б різну кольорову гаму для консолі
         }
+
+        ParserOutput.WriteColoredLine("Parser: BooleanExpression", ConsoleColor.DarkYellow);
         ParserOutput.DecreaseIndent();
+
+        if (expectedType == "void")
+        {
+            return (leftType, "");
+        }
+
+        if (rightType == "")
+        {
+            if (!CheckCompatibility(leftType, expectedType))
+            {
+                throw new Exception($"Тип виразу {leftType} не сумісний");
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(rightType) && !CheckCompatibility(leftType, rightType))
+        {
+            if (rightType == "")
+            {
+                throw new Exception($"Тип виразу {leftType} не сумісний");
+            }
+
+            throw new Exception($"Типи виразів {leftType} та {rightType} не сумісні");
+        }
+
+        if (!string.IsNullOrWhiteSpace(rightType) && !CheckCompatibility(rightType, expectedType))
+        {
+            throw new Exception($"Тип виразу {rightType} не сумісний");
+        }
+
+      
         return ("bool", ""); // Placeholder
     }
 
     private (string Type, string Value) ParseArithmeticExpression(string expectedType)
     {
+
         ParserOutput.IncreaseIndent();
-        ParserOutput.WriteLine("Parser: ArithmeticExpression");
+        ParserOutput.WriteColoredLine("Parser: ArithmeticExpression", ConsoleColor.DarkYellow);
+
         var leftType = ParseTerm();
+        string rightType = "";
         // Parse arithmetic expression logic...
+        while (_lexer.TokenTable[GlobalVars.CurrentTokenIndex].Lexeme is "+" or "-")
+        {
+            var op = _lexer.TokenTable[GlobalVars.CurrentTokenIndex].Lexeme;
+            _tokenParser.ParseToken(op, _lexer.TokenTable[GlobalVars.CurrentTokenIndex].Type);
+            rightType = ParseTerm();
+        }
+
+
+        ParserOutput.WriteColoredLine("Parser: ArithmeticExpression", ConsoleColor.DarkYellow);
         ParserOutput.DecreaseIndent();
-        return (expectedType, ""); // Placeholder
+
+        //TODO: проблема перевірки при BooleanExpression
+
+        if (expectedType == "void") //якщо тип не вказаний, то ми просто повертаємо тип виразу (для print, when, while)
+        {
+            return (leftType, "");
+        }
+
+        if (rightType == "")
+        {
+            if (!CheckCompatibility(leftType, expectedType))
+            {
+                throw new Exception($"Тип виразу {leftType} не сумісний");
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(rightType) && !CheckCompatibility(leftType, rightType))
+        {
+            if (rightType == "")
+            {
+                throw new Exception($"Тип виразу {leftType} не сумісний");
+            }
+
+            throw new Exception($"Типи виразів {leftType} та {rightType} не сумісні");
+        }
+
+        if (!string.IsNullOrWhiteSpace(rightType) && !CheckCompatibility(rightType, expectedType))
+        {
+            throw new Exception($"Тип виразу {rightType} не сумісний");
+        }
+
+        return (expectedType, "");
     }
 
-   
+
     private string ParseRelationalExpr()
     {
-        // Parse relational expression logic...
-        return ""; // Placeholder
+        // RelationalExpr = ArthmExpr RelationalOp ArthmExpr
+        ParserOutput.IncreaseIndent();
+        ParserOutput.WriteLine("Parser: RelationalExpr");
+        var left = ParseArithmeticExpression("void");
+        var currentToken = _lexer.TokenTable[GlobalVars.CurrentTokenIndex];
+        (string type, string value) right = ("", "");
+        if (currentToken.Lexeme is "==" or "!=" or "<" or "<=" or ">" or ">=")
+        {
+            _tokenParser.ParseToken(currentToken.Lexeme, currentToken.Type);
+            right = ParseArithmeticExpression("void");
+        }
+
+        ParserOutput.WriteColoredLine("Parser: RelationalExpr", ConsoleColor.DarkYellow);
+        ParserOutput.DecreaseIndent();
+        //ситуація, маєш 5 < 56 -> ну це ж буль, а між ними якийсь із операторів
+        if (left.Type.Equals(right.type))
+        {
+            return "bool"; //TODO: change this
+        }
+        return left.Type;
     }
 
     /// <summary>
@@ -74,23 +177,26 @@ public class ExpressionParser
     /// <returns></returns>
     private bool IsBooleanExpression()
     {
+        ParserOutput.IncreaseIndent();
+        ParserOutput.WriteColoredLine("Parser: IsBooleanExpression", ConsoleColor.Blue);
         var currentTokenLexeme = _lexer.TokenTable[GlobalVars.CurrentTokenIndex].Lexeme;
-
+        bool result = false;
         if (currentTokenLexeme == "true" || currentTokenLexeme == "false")
         {
-            return true;
+            result = true;
         }
 
         if (currentTokenLexeme is "&&" or "||" or "==" or "!=" or "<" or "<=" or ">" or ">=")
         {
-            return true; // Logical or relational operator
+            result = true; // Logical or relational operator
         }
 
         if (IsRelationalExpression())
         {
-            return true;
+            result = true;
         }
-
+        ParserOutput.WriteColoredLine($"Parser: IsBooleanExpression {result}", ConsoleColor.Blue);
+        ParserOutput.DecreaseIndent();
         return false;
     }
 
@@ -99,6 +205,7 @@ public class ExpressionParser
         var initialIndex = GlobalVars.CurrentTokenIndex;
 
         //парсимо можливий арифметичний вираз
+        //TODO: проблема, кожного разу перевіряємо, чи то буль і так далі, потрібно це сховати
         ParseArithmeticExpression("void");
         bool result = false;
         var token = _lexer.TokenTable[GlobalVars.CurrentTokenIndex];
@@ -122,6 +229,7 @@ public class ExpressionParser
     {
         ParserOutput.IncreaseIndent();
         ParserOutput.WriteLine("Parser: Term");
+
         var currentToken = _lexer.TokenTable[GlobalVars.CurrentTokenIndex];
         //якщо ми зустріли символ ;, то ми виходимо з цього методу
         string leftType = ParseFactor();
@@ -152,17 +260,19 @@ public class ExpressionParser
         //маєш три опції, або змінна, або число
         var currentToken = _lexer.TokenTable[GlobalVars.CurrentTokenIndex];
         string result = "";
+
         ParserOutput.IncreaseIndent();
         ParserOutput.WriteLine("Parser: Factor");
+
         if (currentToken.Type == "id")
         {
-            if (variables.All(v => v.Name != currentToken.Lexeme))
+            if (GlobalVars.VariableTable.All(v => v.Name != currentToken.Lexeme))
             {
                 throw new Exception($"Змінна {currentToken.Lexeme} не була оголошена");
             }
 
             _tokenParser.ParseToken(currentToken.Lexeme, "id");
-            result = variables.First(v => v.Name == currentToken.Lexeme).Type;
+            result = GlobalVars.VariableTable.First(v => v.Name == currentToken.Lexeme).Type;
             //_currentTokenIndex++;
         }
 
@@ -204,19 +314,22 @@ public class ExpressionParser
     }
 
     public Variable IsVariableDeclared(string name)
-        => variables.FirstOrDefault(v => v.Name == name);
+        => GlobalVars.VariableTable.FirstOrDefault(v => v.Name == name);
 
     public void AddVariable(Variable variable)
-        => variables.Add(variable);
+        => GlobalVars.VariableTable.Add(variable);
 
     public void UpdateVariable(string name, string value)
     {
-        var variable = variables.FirstOrDefault(v => v.Name == name);
-        if (variable == null)
+        var variable = GlobalVars.VariableTable.FirstOrDefault(v => v.Name == name);
+        if (variable == null) //TODO: investigate
         {
             throw new Exception($"Змінна {name} не була оголошена");
         }
         variable.Value = value;
     }
+    private bool CheckCompatibility(string type1, string type2)
+        => type1 == type2;
 }
+
 

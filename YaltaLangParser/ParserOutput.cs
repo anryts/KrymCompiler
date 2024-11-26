@@ -8,7 +8,7 @@ namespace YaltaLangParser;
 
 public static class ParserOutput
 {
-    private static int _indentLevel = -1;
+    private static int _indentLevel = 0;
 
     public static void IncreaseIndent() => _indentLevel++;
 
@@ -21,6 +21,8 @@ public static class ParserOutput
 
     public static void WriteColoredLine(string message, ConsoleColor color)
     {
+        //Якщо програма закриється, кольорова схема може залишитися у такому стані. тому скидуємо кожного разу
+        Console.ResetColor();
         Console.ForegroundColor = color;
         WriteLine(message);
         Console.ResetColor();
@@ -29,3 +31,4 @@ public static class ParserOutput
     public static void WriteSuccess(string message) => WriteColoredLine(message, ConsoleColor.Green);
     public static void WriteError(string message) => WriteColoredLine(message, ConsoleColor.Red);
 }
+
