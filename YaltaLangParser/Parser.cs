@@ -26,7 +26,7 @@ public class Parser
 
             //Потім ми читаємо правило StatementBlock -> { StatementList }
             ParseStatementBlock();
-            //Це перевірка, чи ми дочитали всі токени. Можлива така ситуація, але символи '}' дублються
+            //Це перевірка, чи ми дочитали всі токени. Можлива така ситуація символи '}' дублються
             if (GlobalVars.CurrentTokenIndex != _lexer.TokenTable.Count)
             {
                 throw new Exception("Символ '}' повторюється");
@@ -92,8 +92,6 @@ public class Parser
 
                 break;
         }
-
-        _tokenParser.ParseToken(";", "punct");
     }
 
     private void ParseReadStatement()
@@ -102,14 +100,13 @@ public class Parser
         ParserOutput.WriteLine("Parser: ReadStatement");
         _tokenParser.ParseToken("read", "keyword");
         _tokenParser.ParseToken("(", "brackets_op");
-        expressionParser.ParseExpression("void"); 
-
+        expressionParser.ParseExpression("void");
+        _tokenParser.ParseToken(";", "punct");
         //TODO: для читання не дуже підходить,
         //ми можемо щось типу такого написати read(123),
         //що буде неправильно, але це поки що не важливо
 
         _tokenParser.ParseToken(")", "brackets_op");
-        _tokenParser.ParseToken(";", "punct");
         ParserOutput.DecreaseIndent();
     }
 
@@ -192,6 +189,8 @@ public class Parser
         _tokenParser.ParseToken(variableName, "id");
         _tokenParser.ParseToken("=", "assign_op");
         var result = expressionParser.ParseExpression(currentType);
+        GlobalVars.VariableTable.Add(new Variable(variableName, currentType, ""));
+        _tokenParser.ParseToken(";", "punct");
         ParserOutput.DecreaseIndent();
         ParserOutput.WriteColoredLine("Parser: DeclarationStatement", ConsoleColor.Yellow);
         ParserOutput.DecreaseIndent();
@@ -203,7 +202,7 @@ public class Parser
         //check if the variable is in the table
         ParserOutput.IncreaseIndent();
         ParserOutput.WriteColoredLine("Parser: AssignmentStatement", ConsoleColor.Yellow);
-        var variable = expressionParser.IsVariableDeclared(_lexer.TokenTable[GlobalVars.CurrentTokenIndex].Lexeme);
+        var variable = GlobalVars.VariableTable.FirstOrDefault(v => v.Name == _lexer.TokenTable[GlobalVars.CurrentTokenIndex].Lexeme);
         if (variable == null)
         {
             throw new Exception($"Variable {_lexer.TokenTable[GlobalVars.CurrentTokenIndex].Lexeme} is not declared");
@@ -213,8 +212,7 @@ public class Parser
         _tokenParser.ParseToken("=", "assign_op");
 
         var expression = expressionParser.ParseExpression(currentType);
-    
-        expressionParser.UpdateVariable(variable.Name, expression.value);
+        _tokenParser.ParseToken(";", "punct");
         ParserOutput.DecreaseIndent();
     }
 }

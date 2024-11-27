@@ -26,15 +26,22 @@ public class ExpressionParser
 
         ParserOutput.IncreaseIndent();
         ParserOutput.WriteColoredLine("Parser: Expression", ConsoleColor.DarkCyan);
-        (string type, string value) result = ("", "");
-        if (!string.IsNullOrWhiteSpace(exptectedType) && string.Equals(exptectedType, "bool"))
+        //(string type, string value) result = ("", "");
+        var result = exptectedType switch
         {
-            result = ParseBooleanExpression(exptectedType);
-        }
-        else
-        {
-            result = IsBooleanExpression() ? ParseBooleanExpression(exptectedType) : ParseArithmeticExpression(exptectedType);
-        }
+            "bool" => ParseBooleanExpression(exptectedType),
+            "int" or "double" => ParseArithmeticExpression(exptectedType),
+            _ => IsBooleanExpression() ? ParseBooleanExpression(exptectedType) : ParseArithmeticExpression(exptectedType)
+        };
+
+        //if (!string.IsNullOrWhiteSpace(exptectedType) && string.Equals(exptectedType, "bool"))
+        //{
+        //    result = ParseBooleanExpression(exptectedType);
+        //}
+        //else
+        //{
+        //    result = IsBooleanExpression() ? ParseBooleanExpression(exptectedType) : ParseArithmeticExpression(exptectedType);
+        //}
 
         ParserOutput.WriteColoredLine("Parser: Expression", ConsoleColor.DarkCyan);
         ParserOutput.DecreaseIndent();
@@ -88,7 +95,7 @@ public class ExpressionParser
             throw new Exception($"Тип виразу {rightType} не сумісний");
         }
 
-      
+
         return ("bool", ""); // Placeholder
     }
 
@@ -197,7 +204,7 @@ public class ExpressionParser
         }
         ParserOutput.WriteColoredLine($"Parser: IsBooleanExpression {result}", ConsoleColor.Blue);
         ParserOutput.DecreaseIndent();
-        return false;
+        return result;
     }
 
     private bool IsRelationalExpression()
@@ -231,7 +238,6 @@ public class ExpressionParser
         ParserOutput.WriteLine("Parser: Term");
 
         var currentToken = _lexer.TokenTable[GlobalVars.CurrentTokenIndex];
-        //якщо ми зустріли символ ;, то ми виходимо з цього методу
         string leftType = ParseFactor();
         while (_lexer.TokenTable[GlobalVars.CurrentTokenIndex].Lexeme is "*" or "/")
         {
@@ -256,7 +262,7 @@ public class ExpressionParser
     /// <exception cref="Exception"></exception>
     private string ParseFactor()
     {
-        //Factor = Id | Number | "(" ArthmExpr ")"
+        //Factor = Id | Number | "(" ArthmExpr ")" | ("+" | "-") | Factor "^" Factor 
         //маєш три опції, або змінна, або число
         var currentToken = _lexer.TokenTable[GlobalVars.CurrentTokenIndex];
         string result = "";
@@ -264,7 +270,23 @@ public class ExpressionParser
         ParserOutput.IncreaseIndent();
         ParserOutput.WriteLine("Parser: Factor");
 
-        if (currentToken.Type == "id")
+
+        // Якщо маємо унарний оператор
+        if (currentToken.Lexeme == "-" || currentToken.Lexeme == "+")
+        {
+            _tokenParser.ParseToken(currentToken.Lexeme, "add_op"); // Розпізнаємо унарний оператор
+
+            var operandType = ParseFactor(); // Розбираємо операнд
+
+            if (operandType == "bool")
+            {
+                throw new Exception($"Унарний оператор '{currentToken.Lexeme}' не може бути застосований до типу 'bool'.");
+            }
+
+            result = operandType; // Тип результату збігається з типом операнду
+        }
+        // Якщо токен - змінна
+        else if (currentToken.Type == "id")
         {
             if (GlobalVars.VariableTable.All(v => v.Name != currentToken.Lexeme))
             {
@@ -273,7 +295,7 @@ public class ExpressionParser
 
             _tokenParser.ParseToken(currentToken.Lexeme, "id");
             result = GlobalVars.VariableTable.First(v => v.Name == currentToken.Lexeme).Type;
-            //_currentTokenIndex++;
+            //GlobalVars.CurrentTokenIndex++;
         }
 
         if (currentToken.Type == "intnum" || currentToken.Type == "realnum")
@@ -293,7 +315,7 @@ public class ExpressionParser
         if (_lexer.TokenTable[GlobalVars.CurrentTokenIndex].Lexeme == "(")
         {
             _tokenParser.ParseToken("(", "brackets_op");
-            result = ParseExpression("").type;
+            result = ParseExpression("void").type;
             _tokenParser.ParseToken(")", "brackets_op");
         }
 
