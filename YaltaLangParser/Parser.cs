@@ -101,12 +101,11 @@ public class Parser
         _tokenParser.ParseToken("read", "keyword");
         _tokenParser.ParseToken("(", "brackets_op");
         expressionParser.ParseExpression("void");
-        _tokenParser.ParseToken(";", "punct");
         //TODO: для читання не дуже підходить,
         //ми можемо щось типу такого написати read(123),
         //що буде неправильно, але це поки що не важливо
-
         _tokenParser.ParseToken(")", "brackets_op");
+        _tokenParser.ParseToken(";", "punct");
         ParserOutput.DecreaseIndent();
     }
 

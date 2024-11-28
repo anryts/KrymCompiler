@@ -1,4 +1,3 @@
 main {
-    intex x = 5;
-    prrint(x);
+      int x;
 }

@@ -8,6 +8,7 @@ public class TokenParser(Lexer lexer)
 
     public int ParseToken(string lexeme, string token)
     {
+        var currentToken = lexer.TokenTable[GlobalVars.CurrentTokenIndex];
         if (GlobalVars.CurrentTokenIndex > _lengthOfSymbolTable)
         {
             throw new Exception("Вийшов за індекс");
@@ -19,7 +20,7 @@ public class TokenParser(Lexer lexer)
             lexer.TokenTable[GlobalVars.CurrentTokenIndex].Type != token)
         {
             throw new Exception(
-                $"Неочікуваний токен: {lexer.TokenTable[GlobalVars.CurrentTokenIndex].Lexeme} на рядку {GlobalVars.CurrentTokenIndex} " +
+                $"Неочікуваний токен: {lexer.TokenTable[GlobalVars.CurrentTokenIndex].Lexeme} на рядку {currentToken.NumLine} " +
                 $"очікувалось {lexeme} типу {token}");
         }
 

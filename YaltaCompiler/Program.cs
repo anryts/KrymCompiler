@@ -14,7 +14,7 @@ var lexer = new Lexer();
 var sourceCodeArr = File.ReadAllText(filePath);
 
 lexer.ProcessInput(sourceCodeArr);
-//OutputHandler.WriteToConsole(lexer.TokenTable, lexer.SymbolTable, lexer.ErrorTable);
+OutputHandler.WriteToConsole(lexer.TokenTable, lexer.SymbolTable, lexer.ErrorTable);
 
 var parser = new Parser(lexer);
 

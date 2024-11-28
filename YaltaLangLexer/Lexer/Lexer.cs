@@ -50,11 +50,11 @@ public class Lexer
                 }
                 else if (_finalStates.Contains(state))
                 {
-                    Processing(ref state, lexeme, charSymbol.ToString());
+                    Processing(ref state, lexeme, charSymbol.ToString(), input);
                 }
                 else
                 {
-                    if (charSymbol == ' ' || charSymbol == '\n' || charSymbol == '\t')
+                    if (charSymbol == ' '|| charSymbol == '\r' || charSymbol == '\n' || charSymbol == '\t')
                     {
                         continue;
                     }
@@ -84,7 +84,7 @@ public class Lexer
         }
 
         var token = lexeme.ToString();
-        TokenTable.Add(new Token(_numLine, token.Length == 0 ? charSymbol:token, "error"));
+        TokenTable.Add(new Token(_numLine, token.Length == 0 ? charSymbol : token, "error"));
     }
 
     private int NextState(int state, string classCh)
@@ -107,7 +107,7 @@ public class Lexer
     /// <param name="state">Поточний стан, передається як ref</param>
     /// <param name="lexeme">Поточний лексема</param>
     /// <param name="token">Поточний символ</param>
-    private void Processing(ref int state, StringBuilder lexeme, string token)
+    private void Processing(ref int state, StringBuilder lexeme, string token, string input)
     {
         switch (state)
         {
@@ -121,7 +121,7 @@ public class Lexer
                 ProcessCompoundOperatorOrSymbol(ref state, lexeme, token);
                 break;
             case 51:
-                ProcessEndOfLine(ref state);
+                ProcessEndOfLine(ref state, input);
                 break;
             case 62:
                 ProcessComment(ref state, lexeme);
@@ -145,10 +145,21 @@ public class Lexer
         _numLine++;
     }
 
-    private void ProcessEndOfLine(ref int state)
+    private void ProcessEndOfLine(ref int state, string input)
     {
-        _numLine++;
-        state = 0;
+        //\r\n на Windows розпізнається як окремий символ (потужно дякуємо),
+        //через що маємо проблеми із дублюванням
+        //Як варіант, оновити правила, але мені зараз це робити ліньки
+        // Якщо поточний символ відповідає Environment.NewLine
+        //TODO: перевір, як воно буде працювати на Unix, можливо, потрібно буде змінити ...
+        if (_numChar + Environment.NewLine.Length - 1 < input.Length &&
+            input.Substring(_numChar, Environment.NewLine.Length) == Environment.NewLine)
+        {
+            _numChar += Environment.NewLine.Length - 1; // Пропускаємо символи нового рядка
+        }
+
+        _numLine++; // Збільшуємо номер рядка
+        state = 0;  // Повертаємо стан автомата у початковий
     }
 
     private void ProcessCompoundOperatorOrSymbol(ref int state, StringBuilder lexeme, string token)
@@ -175,29 +186,29 @@ public class Lexer
         switch (tokenType)
         {
             case "keyword":
-            {
-                TokenTable.Add(
-                    new Token(_numLine, lexeme.ToString(), tokenType));
-                break;
-            }
+                {
+                    TokenTable.Add(
+                        new Token(_numLine, lexeme.ToString(), tokenType));
+                    break;
+                }
             case "identifier":
-            {
-                int indx = IndexIdConst(state, lexeme.ToString(), tokenType);
-                TokenTable.Add(new Token(_numLine, lexeme.ToString(), tokenType, indx));
-                break;
-            }
+                {
+                    int indx = IndexIdConst(state, lexeme.ToString(), tokenType);
+                    TokenTable.Add(new Token(_numLine, lexeme.ToString(), tokenType, indx));
+                    break;
+                }
             case "intnum" or "realnum" or "boolval":
-            {
-                int indx = IndexIdConst(state, lexeme.ToString(), tokenType);
-                TokenTable.Add(new Token(_numLine, lexeme.ToString(), tokenType, indx));
-                break;
-            }
+                {
+                    int indx = IndexIdConst(state, lexeme.ToString(), tokenType);
+                    TokenTable.Add(new Token(_numLine, lexeme.ToString(), tokenType, indx));
+                    break;
+                }
             case "id":
-            {
-                int indx = IndexIdConst(state, lexeme.ToString(), tokenType);
-                TokenTable.Add(new Token(_numLine, lexeme.ToString(), tokenType, indx));
-                break;
-            }
+                {
+                    int indx = IndexIdConst(state, lexeme.ToString(), tokenType);
+                    TokenTable.Add(new Token(_numLine, lexeme.ToString(), tokenType, indx));
+                    break;
+                }
         }
 
         lexeme.Clear();
@@ -226,7 +237,7 @@ public class Lexer
 
     private int PutCharBack(int numberOfChar)
         => numberOfChar - 1;
-    
+
     private int FindCurrentPositionRelativeToCurrentLine(string input, int numChar)
     {
         int position = 0;

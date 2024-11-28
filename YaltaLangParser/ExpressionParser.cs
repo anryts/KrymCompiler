@@ -34,15 +34,6 @@ public class ExpressionParser
             _ => IsBooleanExpression() ? ParseBooleanExpression(exptectedType) : ParseArithmeticExpression(exptectedType)
         };
 
-        //if (!string.IsNullOrWhiteSpace(exptectedType) && string.Equals(exptectedType, "bool"))
-        //{
-        //    result = ParseBooleanExpression(exptectedType);
-        //}
-        //else
-        //{
-        //    result = IsBooleanExpression() ? ParseBooleanExpression(exptectedType) : ParseArithmeticExpression(exptectedType);
-        //}
-
         ParserOutput.WriteColoredLine("Parser: Expression", ConsoleColor.DarkCyan);
         ParserOutput.DecreaseIndent();
         return result;
@@ -76,7 +67,7 @@ public class ExpressionParser
         {
             if (!CheckCompatibility(leftType, expectedType))
             {
-                throw new Exception($"Тип виразу {leftType} не сумісний");
+                throw new Exception($"Тип виразу: {leftType} не сумісний, на рядку: {currentToken.NumLine}");
             }
         }
 
@@ -84,15 +75,15 @@ public class ExpressionParser
         {
             if (rightType == "")
             {
-                throw new Exception($"Тип виразу {leftType} не сумісний");
+                throw new Exception($"Тип виразу: {leftType} не сумісний, на рядку: {currentToken.NumLine}");
             }
 
-            throw new Exception($"Типи виразів {leftType} та {rightType} не сумісні");
+            throw new Exception($"Типи виразів {leftType} та {rightType} не сумісні, на рядку: {currentToken.NumLine}");
         }
 
         if (!string.IsNullOrWhiteSpace(rightType) && !CheckCompatibility(rightType, expectedType))
         {
-            throw new Exception($"Тип виразу {rightType} не сумісний");
+            throw new Exception($"Тип виразу {rightType} не сумісний, на рядку: {currentToken.NumLine}");
         }
 
 
@@ -104,7 +95,7 @@ public class ExpressionParser
 
         ParserOutput.IncreaseIndent();
         ParserOutput.WriteColoredLine("Parser: ArithmeticExpression", ConsoleColor.DarkYellow);
-
+        var currentToken = _lexer.TokenTable[GlobalVars.CurrentTokenIndex];
         var leftType = ParseTerm();
         string rightType = "";
         // Parse arithmetic expression logic...
@@ -130,7 +121,7 @@ public class ExpressionParser
         {
             if (!CheckCompatibility(leftType, expectedType))
             {
-                throw new Exception($"Тип виразу {leftType} не сумісний");
+                throw new Exception($"Тип виразу: {leftType} не сумісний, на рядку: {currentToken.NumLine}");
             }
         }
 
@@ -138,15 +129,15 @@ public class ExpressionParser
         {
             if (rightType == "")
             {
-                throw new Exception($"Тип виразу {leftType} не сумісний");
+                throw new Exception($"Тип виразу:  {leftType}  не сумісний, ня рядку: {currentToken.NumLine}");
             }
 
-            throw new Exception($"Типи виразів {leftType} та {rightType} не сумісні");
+            throw new Exception($"Типи виразів {leftType} та {rightType} не сумісні, на рядку: {currentToken.NumLine}");
         }
 
         if (!string.IsNullOrWhiteSpace(rightType) && !CheckCompatibility(rightType, expectedType))
         {
-            throw new Exception($"Тип виразу {rightType} не сумісний");
+            throw new Exception($"Тип виразу {rightType} не сумісний, на рядку: {currentToken.NumLine}");
         }
 
         return (expectedType, "");
@@ -295,7 +286,6 @@ public class ExpressionParser
 
             _tokenParser.ParseToken(currentToken.Lexeme, "id");
             result = GlobalVars.VariableTable.First(v => v.Name == currentToken.Lexeme).Type;
-            //GlobalVars.CurrentTokenIndex++;
         }
 
         if (currentToken.Type == "intnum" || currentToken.Type == "realnum")
@@ -319,6 +309,7 @@ public class ExpressionParser
             _tokenParser.ParseToken(")", "brackets_op");
         }
 
+        //Правоасоціативний оператор ^, для його обробки використовуємо рекурсію
         if (_lexer.TokenTable[GlobalVars.CurrentTokenIndex].Lexeme == "^")
         {
             _tokenParser.ParseToken("^", "exp_op");
@@ -329,6 +320,7 @@ public class ExpressionParser
             {
                 throw new Exception($"Parser: Невідповідність типам: {result} ^ {rightType}");
             }
+            result = rightType;
         }
 
         ParserOutput.DecreaseIndent();
