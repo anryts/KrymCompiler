@@ -14,6 +14,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\YaltaLangLexer\YaltaLangLexer.csproj" />
+      <ProjectReference Include="..\YaltaLangParser\YaltaLangParser.csproj" />
     </ItemGroup>
 
 </Project>

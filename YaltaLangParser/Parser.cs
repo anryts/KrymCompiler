@@ -16,7 +16,12 @@ public class Parser
         expressionParser = new ExpressionParser(lexer, _tokenParser);
     }
 
-    public void ParseProgram()
+    /// <summary>
+    /// Повертає результат у вигляді string, якщо виникла якась помилка
+    /// Та додатково виводить до консолі результат
+    /// </summary>
+    /// <returns></returns>
+    public string ParseProgram()
     {
         try
         {
@@ -32,10 +37,12 @@ public class Parser
                 throw new Exception("Символ '}' повторюється");
             }
             ParserOutput.WriteSuccess("Парсинг завершено успішно");
+            return string.Empty;
         }
         catch (Exception e)
         {
             ParserOutput.WriteError($"Помилка парсингу: {e.Message}");
+            return $"Помилка парсингу: {e.Message}";
         }
     }
 
