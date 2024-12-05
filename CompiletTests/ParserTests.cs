@@ -11,7 +11,7 @@ public class ParserTests
     {
         [Theory]
         [InlineData("test.yt")]
-        //[InlineData("nested.yt")]
+        [InlineData("nested.yt")]
         //[InlineData("misspelled.yt")] // Corrected spelling
         //[InlineData("excess_syntax_elements.yt")]
         public void ProcessInputTest_True_IfNotException(string fileName)

@@ -12,6 +12,7 @@ public static class CharExtensions
         return ch switch
         {
             '.' => "dot",
+
             ' ' or '\t' => "ws",
             '\n' or '\r' => "eol",
             _ when char.IsLower(ch) => "Letter",

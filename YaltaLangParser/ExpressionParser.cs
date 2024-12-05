@@ -114,6 +114,11 @@ public class ExpressionParser
             {
                 rightType= "double";
             }
+
+            if (leftType is "bool"|| rightType is "bool")
+            {
+                throw new Exception($"Помилка: оператор '{op}' не може бути застосований до типу 'bool'.");
+            }
         }
 
 
@@ -171,6 +176,12 @@ public class ExpressionParser
             _tokenParser.ParseToken(currentToken.Lexeme, currentToken.Type);
             right = ParseArithmeticExpression("void");
         }
+
+        if (currentToken.Lexeme is "-" or "+" or "*" or "/")
+        {
+            throw new Exception("Очікувався реляційний оператор, але знайдено арифметичний");
+        }
+        //TODO: true + 2 -> повинно бути помилковим
 
         ParserOutput.WriteColoredLine("Parser: RelationalExpr", ConsoleColor.DarkYellow);
         ParserOutput.DecreaseIndent();
