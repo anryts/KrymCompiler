@@ -97,13 +97,28 @@ public class ExpressionParser
         ParserOutput.WriteColoredLine("Parser: ArithmeticExpression", ConsoleColor.DarkYellow);
         var currentToken = _lexer.TokenTable[GlobalVars.CurrentTokenIndex];
         var leftType = ParseTerm();
+        if (expectedType == "double" && leftType == "int")
+        {
+            leftType = "double";
+        }
         string rightType = "";
         // Parse arithmetic expression logic...
         while (_lexer.TokenTable[GlobalVars.CurrentTokenIndex].Lexeme is "+" or "-")
         {
             var op = _lexer.TokenTable[GlobalVars.CurrentTokenIndex].Lexeme;
             _tokenParser.ParseToken(op, _lexer.TokenTable[GlobalVars.CurrentTokenIndex].Type);
+            
             rightType = ParseTerm();
+
+            if (expectedType == "double" && rightType == "int")
+            {
+                rightType= "double";
+            }
+
+            if (leftType is "bool"|| rightType is "bool")
+            {
+                throw new Exception($"Помилка: оператор '{op}' не може бути застосований до типу 'bool'.");
+            }
         }
 
 
@@ -121,6 +136,10 @@ public class ExpressionParser
         {
             if (!CheckCompatibility(leftType, expectedType))
             {
+                if (leftType == "int" && expectedType == "double")
+                {
+                    return (expectedType, "");
+                }
                 throw new Exception($"Тип виразу: {leftType} не сумісний, на рядку: {currentToken.NumLine}");
             }
         }
@@ -157,6 +176,12 @@ public class ExpressionParser
             _tokenParser.ParseToken(currentToken.Lexeme, currentToken.Type);
             right = ParseArithmeticExpression("void");
         }
+
+        if (currentToken.Lexeme is "-" or "+" or "*" or "/")
+        {
+            throw new Exception("Очікувався реляційний оператор, але знайдено арифметичний");
+        }
+        //TODO: true + 2 -> повинно бути помилковим
 
         ParserOutput.WriteColoredLine("Parser: RelationalExpr", ConsoleColor.DarkYellow);
         ParserOutput.DecreaseIndent();
@@ -342,6 +367,7 @@ public class ExpressionParser
         }
         variable.Value = value;
     }
+    
     private bool CheckCompatibility(string type1, string type2)
         => type1 == type2;
 }

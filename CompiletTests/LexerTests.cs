@@ -13,10 +13,17 @@ public class LexerTests
     [InlineData("excess_syntax_elements.yt")]
     public void ProcessInputTest_True_IfNotException(string fileName)
     {
+        // Get the project directory dynamically
         string projectDirectory = Directory.GetParent(Directory.GetCurrentDirectory()).Parent.Parent.FullName;
-        string filePath = Path.Combine(projectDirectory,"TestData", fileName);
 
-        if (!File.Exists(filePath)) throw new Exception("File not found: " + filePath);
+        // Use the fileName passed from InlineData
+        string filePath = Path.Combine(projectDirectory, "ExamplesOfCode", "ForParserTests", fileName);
+
+        // Check if the file exists
+        if (!File.Exists(filePath))
+        {
+            throw new Exception("File not found: " + filePath);
+        }
 
         var lexer = new Lexer();
 
@@ -32,7 +39,7 @@ public class LexerTests
     public void ProcessInputTest_False_IfException(string fileName)
     {
         string projectDirectory = Directory.GetParent(Directory.GetCurrentDirectory()).Parent.Parent.FullName;
-        string filePath = Path.Combine(projectDirectory,"TestData", fileName);
+        string filePath = Path.Combine(projectDirectory, "TestData", fileName);
 
         if (!File.Exists(filePath)) throw new Exception("File not found: " + filePath);
 

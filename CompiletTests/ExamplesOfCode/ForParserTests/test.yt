@@ -1,0 +1,7 @@
+main {
+      double pi = 3.14 / 2;
+
+      double pii = 3.14 + 2;
+
+      bool a1 = (2 + 2 > 4); 
+}

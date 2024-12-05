@@ -1,3 +1,3 @@
 main {
-      int x;
+       double pi = 3.14 / 2;
 }
