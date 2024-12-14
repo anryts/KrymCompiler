@@ -5,9 +5,11 @@ namespace YaltaLangParser;
 
 public class Parser
 {
-    private readonly Lexer _lexer;
-    private readonly TokenParser _tokenParser;
-    private readonly ExpressionParser expressionParser;
+    public readonly Lexer _lexer;
+    public readonly TokenParser _tokenParser;
+    public readonly ExpressionParser expressionParser;
+    public List<Token> CodeTable { get; set; } = new List<Token>();
+    public List<Label> labels = new List<Label>();
 
     public Parser(Lexer lexer)
     {
@@ -109,7 +111,7 @@ public class Parser
         _tokenParser.ParseToken("(", "brackets_op");
         expressionParser.ParseExpression("void");
         //TODO: для читання не дуже підходить,
-        //ми можемо щось типу такого написати read(123),
+        //ми можемо щось типу такого написати read(123),    
         //що буде неправильно, але це поки що не важливо
         _tokenParser.ParseToken(")", "brackets_op");
         _tokenParser.ParseToken(";", "punct");
@@ -144,7 +146,13 @@ public class Parser
 
         _tokenParser.ParseToken("when", "keyword");
         _tokenParser.ParseToken("(", "brackets_op");
+        var labelName = GenerateLabel();
         _ = expressionParser.ParseExpression("bool");
+        //string[] test = new string[GlobalVars.SetsOfOperations.Count];
+        //GlobalVars.SetsOfOperations.CopyTo(test);
+        labels.Add(new Label(labelName, Convert.ToInt32(_lexer.TokenTable[GlobalVars.CurrentTokenIndex].NumLine)));
+        GlobalVars.SetsOfOperations.Clear();
+        //add jmp operation
         _tokenParser.ParseToken(")", "brackets_op");
         ParseStatementBlock();
         if (_lexer.TokenTable[GlobalVars.CurrentTokenIndex].Lexeme == "fallback")
@@ -191,11 +199,16 @@ public class Parser
         {
             throw new Exception($"Змінна {variableName} вже була оголошена");
         }
-
+        var currentToken = _lexer.TokenTable[GlobalVars.CurrentTokenIndex];
         _tokenParser.ParseToken(variableName, "id");
+        CodeTable.Add(new Token(Convert.ToInt32(_lexer.TokenTable[GlobalVars.CurrentTokenIndex].NumLine), variableName, "l-val"));
         _tokenParser.ParseToken("=", "assign_op");
         var result = expressionParser.ParseExpression(currentType);
+        CodeTable.AddRange(GlobalVars.CompileToPostrifx());
+        CodeTable.Add(new Token(Convert.ToInt32(currentToken.NumLine), "=", "assign_op"));
         GlobalVars.VariableTable.Add(new Variable(variableName, currentType, ""));
+
+        GlobalVars.SetsOfOperations.Clear();
         _tokenParser.ParseToken(";", "punct");
         ParserOutput.DecreaseIndent();
         ParserOutput.WriteColoredLine("Parser: DeclarationStatement", ConsoleColor.Yellow);
@@ -208,17 +221,28 @@ public class Parser
         //check if the variable is in the table
         ParserOutput.IncreaseIndent();
         ParserOutput.WriteColoredLine("Parser: AssignmentStatement", ConsoleColor.Yellow);
+        var currentToken = _lexer.TokenTable[GlobalVars.CurrentTokenIndex];
         var variable = GlobalVars.VariableTable.FirstOrDefault(v => v.Name == _lexer.TokenTable[GlobalVars.CurrentTokenIndex].Lexeme);
         if (variable == null)
         {
             throw new Exception($"Variable {_lexer.TokenTable[GlobalVars.CurrentTokenIndex].Lexeme} is not declared");
         }
         var currentType = variable.Type;
+        CodeTable.Add(new Token(Convert.ToInt32(currentToken.NumLine), variable.Name, "l-val"));
         _tokenParser.ParseToken(variable.Name, "id");
         _tokenParser.ParseToken("=", "assign_op");
-
         var expression = expressionParser.ParseExpression(currentType);
+        //write into postfix
+        var result = GlobalVars.CompileToPostrifx();
+
+        CodeTable.AddRange(result);
+        GlobalVars.SetsOfOperations.Clear();
         _tokenParser.ParseToken(";", "punct");
         ParserOutput.DecreaseIndent();
+    }
+
+    private string GenerateLabel()
+    {
+        return $"L{labels.Count}";
     }
 }

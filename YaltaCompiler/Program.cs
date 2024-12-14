@@ -1,5 +1,6 @@
 ﻿using OurDartLangLexer.Lexer;
 using YaltaLangLexer.DataProviders;
+using YaltaLangMachine;
 using YaltaLangParser;
 
 
@@ -20,5 +21,7 @@ var parser = new Parser(lexer);
 
 parser.ParseProgram();
 
+var translator = new PSM(parser);
+translator.ParsePostfixProgram();
 
 //TODO: test a parser for numeric expressions
