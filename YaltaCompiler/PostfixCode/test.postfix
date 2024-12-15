@@ -1,0 +1,19 @@
+.target: Postfix Machine
+.version: 1a
+
+.variables(
+   a      int          
+)
+
+.labels(
+)
+
+.code(
+   a      l-val 
+   5      intnum
+   NEG    neg_op
+   2      intnum
+   -      add_op
+   =      assign_op
+)
+

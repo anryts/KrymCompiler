@@ -296,7 +296,7 @@ public class ExpressionParser
         // Якщо маємо унарний оператор
         if (currentToken.Lexeme == "-") //|| currentToken.Lexeme == "+")
         {
-            GlobalVars.SetsOfOperations.Add(new Token(int.Parse(currentToken.NumLine), "NEG", "add_op"));
+            GlobalVars.SetsOfOperations.Add(new Token(int.Parse(currentToken.NumLine), "NEG", "neg_op"));
             
             _tokenParser.ParseToken(currentToken.Lexeme, "add_op"); // Розпізнаємо унарний оператор
            
@@ -316,8 +316,8 @@ public class ExpressionParser
             {
                 throw new Exception($"Змінна {currentToken.Lexeme} не була оголошена");
             }
-
-            GlobalVars.SetsOfOperations.Add(currentToken);
+            GlobalVars.SetsOfOperations.Add(new Token(int.Parse(currentToken.NumLine), currentToken.Lexeme, "r-val"));
+            //GlobalVars.SetsOfOperations.Add(currentToken);
             _tokenParser.ParseToken(currentToken.Lexeme, "id");
            
             result = GlobalVars.VariableTable.First(v => v.Name == currentToken.Lexeme).Type;

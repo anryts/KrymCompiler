@@ -23,5 +23,6 @@ parser.ParseProgram();
 
 var translator = new PSM(parser);
 translator.ParsePostfixProgram();
+translator.WriteToFile("test");
 
 //TODO: test a parser for numeric expressions
