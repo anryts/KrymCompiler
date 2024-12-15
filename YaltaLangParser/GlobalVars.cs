@@ -31,6 +31,7 @@ public static class GlobalVars
     /// <summary>
     /// Приводить програму до постфіксної форми
     /// і вертає стек цього дійства
+    /// і очищує стек викликів
     /// </summary>
     public static List<Token> CompileToPostrifx()
     {
@@ -69,7 +70,7 @@ public static class GlobalVars
         {
             output.Add(operation);
         }
-
+        SetsOfOperations.Clear();
         return [.. output];
     }
 }

@@ -7,11 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="PostfixCode\" />
+    <ProjectReference Include="..\YaltaLangParser\YaltaLangParser.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\YaltaLangParser\YaltaLangParser.csproj" />
+    <Folder Include="PostfixCode\" />
   </ItemGroup>
 
 </Project>

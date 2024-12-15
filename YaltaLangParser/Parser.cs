@@ -9,7 +9,7 @@ public class Parser
     public readonly TokenParser _tokenParser;
     public readonly ExpressionParser expressionParser;
     public List<Token> CodeTable { get; set; } = new List<Token>();
-    public List<Label> labels = new List<Label>();
+    public List<Label> LabelTable = new List<Label>();
 
     public Parser(Lexer lexer)
     {
@@ -127,11 +127,21 @@ public class Parser
     {
         ParserOutput.IncreaseIndent();
         ParserOutput.WriteColoredLine("Parser: WhileStatement", ConsoleColor.Yellow);
+        var labelName = GenerateLabel();
+        LabelTable.Add(new Label(labelName, Convert.ToInt32(_lexer.TokenTable[GlobalVars.CurrentTokenIndex].NumLine)));
         _tokenParser.ParseToken("while", "keyword");
         _tokenParser.ParseToken("(", "brackets_op");
         expressionParser.ParseExpression("bool");
+        CodeTable.Add(new Token(0, labelName, "label"));
+        CodeTable.AddRange(GlobalVars.CompileToPostrifx());
+        labelName = GenerateLabel();
+        CodeTable.Add(new Token(0, labelName, "label"));
+        CodeTable.Add(new Token(0, "JF", "jf"));
         _tokenParser.ParseToken(")", "brackets_op");
         ParseStatementBlock();
+        CodeTable.AddRange(GlobalVars.CompileToPostrifx());
+        CodeTable.Add(new Token(0, "JUMP", "jump"));
+        CodeTable.Add(new Token(0, labelName, "label"));
         ParserOutput.WriteColoredLine("Parser: WhileStatement", ConsoleColor.Yellow);
         ParserOutput.DecreaseIndent();
     }
@@ -150,16 +160,27 @@ public class Parser
         _ = expressionParser.ParseExpression("bool");
         //string[] test = new string[GlobalVars.SetsOfOperations.Count];
         //GlobalVars.SetsOfOperations.CopyTo(test);
-        labels.Add(new Label(labelName, Convert.ToInt32(_lexer.TokenTable[GlobalVars.CurrentTokenIndex].NumLine)));
+        LabelTable.Add(new Label(labelName, Convert.ToInt32(_lexer.TokenTable[GlobalVars.CurrentTokenIndex].NumLine)));
+        CodeTable.AddRange(GlobalVars.CompileToPostrifx());
+        CodeTable.Add(new Token(0, labelName, "label"));
+        CodeTable.Add(new Token(0, "JF", "jf"));
         GlobalVars.SetsOfOperations.Clear();
         //add jmp operation
         _tokenParser.ParseToken(")", "brackets_op");
         ParseStatementBlock();
         if (_lexer.TokenTable[GlobalVars.CurrentTokenIndex].Lexeme == "fallback")
         {
+            labelName = GenerateLabel();
+            CodeTable.Add(new Token(0, labelName, "label"));
+            LabelTable.Add(new Label(labelName, Convert.ToInt32(_lexer.TokenTable[GlobalVars.CurrentTokenIndex].NumLine)));
+            CodeTable.Add(new Token(0, "JMP", "jmp"));
             ParseFallbackStatement();
+            CodeTable.Add(new Token(0, labelName, "label"));
         }
-
+        else
+        {
+            CodeTable.Add(new Token(0, labelName, "label"));
+        }
         ParserOutput.WriteColoredLine("Parser: IfStatement", ConsoleColor.Yellow);
         ParserOutput.DecreaseIndent();
     }
@@ -230,12 +251,13 @@ public class Parser
         var currentType = variable.Type;
         CodeTable.Add(new Token(Convert.ToInt32(currentToken.NumLine), variable.Name, "l-val"));
         _tokenParser.ParseToken(variable.Name, "id");
+        var currentToken_1 = _lexer.TokenTable[GlobalVars.CurrentTokenIndex]; // remember the token assign_op =
         _tokenParser.ParseToken("=", "assign_op");
         var expression = expressionParser.ParseExpression(currentType);
         //write into postfix
         var result = GlobalVars.CompileToPostrifx();
-
         CodeTable.AddRange(result);
+        CodeTable.Add(currentToken_1);
         GlobalVars.SetsOfOperations.Clear();
         _tokenParser.ParseToken(";", "punct");
         ParserOutput.DecreaseIndent();
@@ -243,6 +265,6 @@ public class Parser
 
     private string GenerateLabel()
     {
-        return $"L{labels.Count}";
+        return $"L{LabelTable.Count}";
     }
 }
