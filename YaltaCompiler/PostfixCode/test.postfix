@@ -2,17 +2,32 @@
 .version: 1a
 
 .variables(
-   a      double       
+   a      int    2     
 )
 
 .labels(
+   L0     13    
+   L1     19    
 )
 
 .code(
    a      l-val 
-   2      intnum
    4      intnum
-   ^      exp_op
    =      assign_op
+   a      r-val 
+   4      intnum
+   !=     rel_op
+   L0     label 
+   JF     jf    
+   a      l-val 
+   1      intnum
+   =      assign_op
+   L1     label 
+   JMP    jmp   
+   L0     label 
+   a      l-val 
+   2      intnum
+   =      assign_op
+   L1     label 
 )
 

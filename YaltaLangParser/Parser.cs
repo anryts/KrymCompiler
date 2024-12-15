@@ -156,13 +156,12 @@ public class Parser
 
         _tokenParser.ParseToken("when", "keyword");
         _tokenParser.ParseToken("(", "brackets_op");
-        var labelName = GenerateLabel();
+        var labelIf = GenerateLabel();
         _ = expressionParser.ParseExpression("bool");
         //string[] test = new string[GlobalVars.SetsOfOperations.Count];
         //GlobalVars.SetsOfOperations.CopyTo(test);
-        LabelTable.Add(new Label(labelName, Convert.ToInt32(_lexer.TokenTable[GlobalVars.CurrentTokenIndex].NumLine)));
         CodeTable.AddRange(GlobalVars.CompileToPostrifx());
-        CodeTable.Add(new Token(0, labelName, "label"));
+        CodeTable.Add(new Token(0, labelIf, "label"));
         CodeTable.Add(new Token(0, "JF", "jf"));
         GlobalVars.SetsOfOperations.Clear();
         //add jmp operation
@@ -170,16 +169,18 @@ public class Parser
         ParseStatementBlock();
         if (_lexer.TokenTable[GlobalVars.CurrentTokenIndex].Lexeme == "fallback")
         {
-            labelName = GenerateLabel();
-            CodeTable.Add(new Token(0, labelName, "label"));
-            LabelTable.Add(new Label(labelName, Convert.ToInt32(_lexer.TokenTable[GlobalVars.CurrentTokenIndex].NumLine)));
+            LabelTable.Add(new Label(labelIf, this.CodeTable.Count + 2)); // це костиль, бо мені ліньки зараз його дороблювати
+            var labelElse = GenerateLabel();
+            CodeTable.Add(new Token(0, labelElse, "label"));
             CodeTable.Add(new Token(0, "JMP", "jmp"));
+            CodeTable.Add(new Token(0, labelIf, "label"));
             ParseFallbackStatement();
-            CodeTable.Add(new Token(0, labelName, "label"));
+            CodeTable.Add(new Token(0, labelElse, "label"));
+            LabelTable.Add(new Label(labelElse, this.CodeTable.Count + 1));
         }
         else
         {
-            CodeTable.Add(new Token(0, labelName, "label"));
+            CodeTable.Add(new Token(0, labelIf, "label"));
         }
         ParserOutput.WriteColoredLine("Parser: IfStatement", ConsoleColor.Yellow);
         ParserOutput.DecreaseIndent();
