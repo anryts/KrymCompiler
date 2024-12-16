@@ -127,21 +127,32 @@ public class Parser
     {
         ParserOutput.IncreaseIndent();
         ParserOutput.WriteColoredLine("Parser: WhileStatement", ConsoleColor.Yellow);
-        var labelName = GenerateLabel();
-        LabelTable.Add(new Label(labelName, Convert.ToInt32(_lexer.TokenTable[GlobalVars.CurrentTokenIndex].NumLine)));
+
+        var conditionLabelName = GenerateLabel();
         _tokenParser.ParseToken("while", "keyword");
         _tokenParser.ParseToken("(", "brackets_op");
+
+        var currentTokenIndex = GlobalVars.CurrentTokenIndex;
+        LabelTable.Add(new Label(conditionLabelName, this.CodeTable.Count)); // для переміщення на умову
+
         expressionParser.ParseExpression("bool");
-        CodeTable.Add(new Token(0, labelName, "label"));
+
+        CodeTable.Add(new Token(0, conditionLabelName, "label"));
         CodeTable.AddRange(GlobalVars.CompileToPostrifx());
-        labelName = GenerateLabel();
-        CodeTable.Add(new Token(0, labelName, "label"));
+        var statementLabeName = GenerateLabel();
+
+        CodeTable.Add(new Token(0, statementLabeName, "label"));
         CodeTable.Add(new Token(0, "JF", "jf"));
         _tokenParser.ParseToken(")", "brackets_op");
+
         ParseStatementBlock();
+
         CodeTable.AddRange(GlobalVars.CompileToPostrifx());
-        CodeTable.Add(new Token(0, "JUMP", "jump"));
-        CodeTable.Add(new Token(0, labelName, "label"));
+        CodeTable.Add(new Token(0, conditionLabelName, "label"));
+        CodeTable.Add(new Token(0, "JMP", "jmp"));
+        CodeTable.Add(new Token(0, statementLabeName, "label"));
+        LabelTable.Add(new Label(statementLabeName, this.CodeTable.Count)); // вихід із циклу
+
         ParserOutput.WriteColoredLine("Parser: WhileStatement", ConsoleColor.Yellow);
         ParserOutput.DecreaseIndent();
     }

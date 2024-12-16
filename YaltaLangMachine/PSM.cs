@@ -21,7 +21,7 @@ public class PSM(Parser parser)
         while (currentInstructionIndex < parser.CodeTable.Count)
         {
             var item = parser.CodeTable[currentInstructionIndex];
-            switch (item.Type)
+             switch (item.Type)
             {
                 case "l-val":
                     {
@@ -49,43 +49,9 @@ public class PSM(Parser parser)
                     {
                         var right = operationStack.Pop();
                         var left = operationStack.Pop();
-                        //TODO: check for && and || operators
-                        // TODO, add real var assignment
-                        if (right.Type == "r-val")
-                        {
-                            var typeOfId = GlobalVars.VariableTable.FirstOrDefault(x => x.Name == right.Lexeme).Type;
-                            if (typeOfId is "int")
-                            {
-                                typeOfId = "intnum";
-                            }
-                            else if (typeOfId is "real")
-                            {
-                                typeOfId = "realnum";
-                            }
-                            else if (typeOfId is "bool")
-                            {
-                                typeOfId = "bool";
-                            }
-                            right = new Token(0, GlobalVars.VariableTable.Find(x => x.Name == right.Lexeme).Value, right.Type);
-                        }
-                        if (left.Type == "r-val")
-                        {
-                            var typeOfId = GlobalVars.VariableTable.FirstOrDefault(x => x.Name == left.Lexeme).Type;
-                            if (typeOfId is "int")
-                            {
-                                typeOfId = "intnum";
-                            }
-                            else if (typeOfId is "real")
-                            {
-                                typeOfId = "realnum";
-                            }
-                            else if (typeOfId is "bool")
-                            {
-                                typeOfId = "bool";
-                            }
-                            var variable = GlobalVars.VariableTable.Find(x => x.Name == left.Lexeme);
-                            left = new Token(0, variable.Value, typeOfId);
-                        }
+
+                        right = GetTokenValue(right);
+                        left = GetTokenValue(left);
 
                         switch (item.Lexeme)
                         {
@@ -170,6 +136,10 @@ public class PSM(Parser parser)
                     {
                         var right = operationStack.Pop();
                         var left = operationStack.Pop();
+
+                        right = GetTokenValue(right);
+                        left = GetTokenValue(left);
+
                         switch (item.Lexeme)
                         {
                             case "+":
@@ -255,6 +225,30 @@ public class PSM(Parser parser)
         }
     }
 
+    //TODO: причеши це в у щось нормальне
+    private static Token GetTokenValue(Token token)
+    {
+        if (token.Type == "r-val")
+        {
+            var variable = GlobalVars.VariableTable.FirstOrDefault(x => x.Name == token.Lexeme);
+            var typeOfId = variable.Type;
+            if (typeOfId == "int")
+            {
+                typeOfId = "intnum";
+            }
+            else if (typeOfId == "real")
+            {
+                typeOfId = "realnum";
+            }
+            else if (typeOfId == "bool")
+            {
+                typeOfId = "bool";
+            }
+            return new Token(0, variable.Value, typeOfId);
+        }
+        return token;
+    }
+   
     public void WriteToFile(string fileName = "default")
     {
         FileWriter.WriteToFile(fileName);

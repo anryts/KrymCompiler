@@ -1,10 +1,7 @@
 main {
-        int a = 4;
-        when (a != 4)
-        {
-            a = 1;
+        int i = 0;
+        while (i < 5){
+            i = i + 1;
         }
-        fallback {
-            a = 2;
-        }
+        i = -5;
 }
