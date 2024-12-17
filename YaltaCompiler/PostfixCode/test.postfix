@@ -2,35 +2,19 @@
 .version: 1a
 
 .variables(
-   i      int    -5    
+   i      int    10    
 )
 
 .labels(
-   L0     3     
-   L1     17    
 )
 
 .code(
    i      l-val 
    0      intnum
    =      assign_op
-   L0     label 
    i      r-val 
-   5      intnum
-   <      rel_op
-   L1     label 
-   JF     jf    
-   i      l-val 
+   READ   read  
    i      r-val 
-   1      intnum
-   +      add_op
-   =      assign_op
-   L0     label 
-   JMP    jmp   
-   L1     label 
-   i      l-val 
-   5      intnum
-   NEG    neg_op
-   =      assign_op
+   PRINT  print 
 )
 

@@ -110,6 +110,8 @@ public class Parser
         _tokenParser.ParseToken("read", "keyword");
         _tokenParser.ParseToken("(", "brackets_op");
         expressionParser.ParseExpression("void");
+        this.CodeTable.AddRange(GlobalVars.CompileToPostrifx());
+        this.CodeTable.Add(new Token(Convert.ToInt32(_lexer.TokenTable[GlobalVars.CurrentTokenIndex].NumLine), "READ", "read"));
         //TODO: для читання не дуже підходить,
         //ми можемо щось типу такого написати read(123),    
         //що буде неправильно, але це поки що не важливо
@@ -204,6 +206,8 @@ public class Parser
         _tokenParser.ParseToken("print", "keyword");
         _tokenParser.ParseToken("(", "brackets_op");
         expressionParser.ParseExpression("void");
+        this.CodeTable.AddRange(GlobalVars.CompileToPostrifx());
+        this.CodeTable.Add(new Token(Convert.ToInt32(_lexer.TokenTable[GlobalVars.CurrentTokenIndex].NumLine), "PRINT", "print"));
         _tokenParser.ParseToken(")", "brackets_op");
         _tokenParser.ParseToken(";", "punct");
         ParserOutput.DecreaseIndent();

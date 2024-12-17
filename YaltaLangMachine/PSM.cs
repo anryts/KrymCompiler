@@ -220,6 +220,27 @@ public class PSM(Parser parser)
                         GlobalVars.VariableTable[varIndex] = updatedVariable;
                         break;
                     }
+                case "print":
+                    {
+                        var value = operationStack.Pop();
+                        var valueToPrint = GetTokenValue(value);
+                        Console.WriteLine($"Вивід: {valueToPrint.Lexeme}");
+                        break;
+                    }
+                case "read":
+                    {
+                        var variable = operationStack.Pop();
+                        var variableValue = GetTokenValue(variable);
+                        Console.Write($"Ввведіть значення для змінної: {variable.Lexeme} типу: {variableValue.Lexeme} >>");
+                        var result = Console.ReadLine();
+                        var varIndex = GlobalVars.VariableTable.FindIndex(x => x.Name == variable.Lexeme);
+                        var updatedVariable = GlobalVars.VariableTable[varIndex];
+                        //var convertedResult= right.Type == "intnum" ? int.Parse(right.Lexeme) + int.Parse(left.Lexeme) : double.Parse(right.Lexeme) + double.Parse(left.Lexeme);
+                        var convertedResult = variableValue.Type == "intnum" ? int.Parse(result) : double.Parse(result);
+                        updatedVariable.Value = convertedResult.ToString();
+                        GlobalVars.VariableTable[varIndex] = updatedVariable;
+                        break;
+                    }
             }
             currentInstructionIndex++;
         }
