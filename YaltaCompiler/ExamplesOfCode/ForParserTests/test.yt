@@ -1,5 +1,17 @@
 main {
         int i = 0;
+        int b = 0;
         read(i);
         print(i);
+        while (i <= 10) {
+                when(i != 5) {
+                       b = b + 1;
+                }
+                fallback {
+                        print(0);
+                }
+                i = i + 1;
+
+        }
+        print(b);
 }
