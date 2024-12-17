@@ -8,6 +8,8 @@ public class Parser
     public readonly Lexer _lexer;
     public readonly TokenParser _tokenParser;
     public readonly ExpressionParser expressionParser;
+
+    private int LabelCount = 0; //костиль
     public List<Token> CodeTable { get; set; } = new List<Token>();
     public List<Label> LabelTable = new List<Label>();
 
@@ -131,6 +133,7 @@ public class Parser
         ParserOutput.WriteColoredLine("Parser: WhileStatement", ConsoleColor.Yellow);
 
         var conditionLabelName = GenerateLabel();
+        var statementLabeName = GenerateLabel();
         _tokenParser.ParseToken("while", "keyword");
         _tokenParser.ParseToken("(", "brackets_op");
 
@@ -141,7 +144,7 @@ public class Parser
 
         CodeTable.Add(new Token(0, conditionLabelName, "label"));
         CodeTable.AddRange(GlobalVars.CompileToPostrifx());
-        var statementLabeName = GenerateLabel();
+       
 
         CodeTable.Add(new Token(0, statementLabeName, "label"));
         CodeTable.Add(new Token(0, "JF", "jf"));
@@ -182,14 +185,14 @@ public class Parser
         ParseStatementBlock();
         if (_lexer.TokenTable[GlobalVars.CurrentTokenIndex].Lexeme == "fallback")
         {
-            LabelTable.Add(new Label(labelIf, this.CodeTable.Count + 2)); // це костиль, бо мені ліньки зараз його дороблювати
+            LabelTable.Add(new Label(labelIf, this.CodeTable.Count )); // це костиль, бо мені ліньки зараз його дороблювати
             var labelElse = GenerateLabel();
             CodeTable.Add(new Token(0, labelElse, "label"));
             CodeTable.Add(new Token(0, "JMP", "jmp"));
             CodeTable.Add(new Token(0, labelIf, "label"));
             ParseFallbackStatement();
             CodeTable.Add(new Token(0, labelElse, "label"));
-            LabelTable.Add(new Label(labelElse, this.CodeTable.Count + 1));
+            LabelTable.Add(new Label(labelElse, this.CodeTable.Count - 1));
         }
         else
         {
@@ -281,6 +284,6 @@ public class Parser
 
     private string GenerateLabel()
     {
-        return $"L{LabelTable.Count}";
+        return $"L{++LabelCount}";
     }
 }

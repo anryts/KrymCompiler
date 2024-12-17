@@ -2,19 +2,59 @@
 .version: 1a
 
 .variables(
-   i      int    10    
+   i      int    11    
+   b      int    9     
 )
 
 .labels(
+   L1     10    
+   L3     26    
+   L4     31    
+   L2     40    
 )
 
 .code(
    i      l-val 
    0      intnum
    =      assign_op
+   b      l-val 
+   0      intnum
+   =      assign_op
    i      r-val 
    READ   read  
    i      r-val 
+   PRINT  print 
+   L1     label 
+   i      r-val 
+   10     intnum
+   <=     rel_op
+   L2     label 
+   JF     jf    
+   i      r-val 
+   5      intnum
+   !=     rel_op
+   L3     label 
+   JF     jf    
+   b      l-val 
+   b      r-val 
+   1      intnum
+   +      add_op
+   =      assign_op
+   L4     label 
+   JMP    jmp   
+   L3     label 
+   0      intnum
+   PRINT  print 
+   L4     label 
+   i      l-val 
+   i      r-val 
+   1      intnum
+   +      add_op
+   =      assign_op
+   L1     label 
+   JMP    jmp   
+   L2     label 
+   b      r-val 
    PRINT  print 
 )
 
