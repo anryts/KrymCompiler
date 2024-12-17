@@ -1,7 +1,13 @@
 ﻿using OurDartLangLexer.Lexer;
+using System.Globalization;
 using YaltaLangLexer.DataProviders;
 using YaltaLangMachine;
 using YaltaLangParser;
+
+
+// Set the culture to invariant globally
+Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
+Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
 
 
 string projectDirectory = Directory.GetParent(Directory.GetCurrentDirectory()).Parent.Parent.FullName;

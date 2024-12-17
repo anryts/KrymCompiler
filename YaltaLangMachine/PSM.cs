@@ -144,13 +144,17 @@ public class PSM(Parser parser)
                         {
                             case "+":
                                 {
-                                    var result = right.Type == "intnum" ? int.Parse(right.Lexeme) + int.Parse(left.Lexeme) : double.Parse(right.Lexeme) + double.Parse(left.Lexeme);
+                                    var result = right.Type == "intnum" ? int.Parse(left.Lexeme) + int.Parse(right.Lexeme) :
+                                                                                double.Parse(left.Lexeme) + double.Parse(right.Lexeme);
+
                                     operationStack.Push(new Token(0, result.ToString(), right.Type));
                                     break;
                                 }
                             case "-":
                                 {
-                                    var result = right.Type == "intnum" ? int.Parse(left.Lexeme) - int.Parse(right.Lexeme) : double.Parse(left.Lexeme) - double.Parse(right.Lexeme);
+                                    var result = right.Type == "intnum" ? int.Parse(left.Lexeme) - int.Parse(right.Lexeme) :
+                                                                                     double.Parse(left.Lexeme) - double.Parse(right.Lexeme);
+
                                     operationStack.Push(new Token(0, result.ToString(), right.Type));
                                     break;
                                 }
