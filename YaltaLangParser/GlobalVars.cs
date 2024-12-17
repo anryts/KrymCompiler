@@ -15,12 +15,10 @@ public static class GlobalVars
 {
     { "(", 0 },  // Дужки мають найнижчий пріоритет
     { ")", 0 },
-    { "||", 1 }, // Логічне OR
-    { "&&", 2 }, // Логічне AND
     { "==", 3 }, { "!=", 3 }, // Рівність і нерівність
     { "<", 4 }, { ">", 4 }, { "<=", 4 }, { ">=", 4 }, // Порівняння
     { "+", 5 }, { "-", 5 }, // Додавання і віднімання
-    { "*", 6 }, { "/", 6 }, { "%", 6 }, // Множення, ділення, модуль
+    { "*", 6 }, { "/", 6 }, // Множення, ділення, модуль
     { "^", 7 }, // Піднесення до степеня
     { "NEG", 8 }, { "!", 8 } // Унарні оператори з найвищим пріоритетом
 };
@@ -43,7 +41,11 @@ public static class GlobalVars
         {
             if (OperatorPrecedence.ContainsKey(operation.Lexeme))
             {
-                while (operatorStack.Count > 0 && OperatorPrecedence[operatorStack.Peek().Lexeme] >= OperatorPrecedence[operation.Lexeme])
+                //Обробка лівосторонніх операторів
+                while (operatorStack.Count > 0 &&
+                      (OperatorPrecedence[operatorStack.Peek().Lexeme] > OperatorPrecedence[operation.Lexeme] ||
+                       (OperatorPrecedence[operatorStack.Peek().Lexeme] == OperatorPrecedence[operation.Lexeme] &&
+                        operation.Lexeme != "^")))
                 {
                     output.Add(operatorStack.Pop());
                 }
@@ -66,6 +68,7 @@ public static class GlobalVars
                 output.Add(operation);
             }
         }
+
         foreach (var operation in operatorStack)
         {
             output.Add(operation);

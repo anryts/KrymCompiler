@@ -27,8 +27,12 @@ var parser = new Parser(lexer);
 
 parser.ParseProgram();
 
-var translator = new PSM(parser);
+var fileProvider= new FileProvider(parser);
+fileProvider.WriteToFile("test");
+var result = fileProvider.ReadFromFile("test");
+var translator = new PSM(result.labelTable, result.variableTable, result.codeTable);
+
 translator.ParsePostfixProgram();
-translator.WriteToFile("test");
+
 
 //TODO: test a parser for numeric expressions

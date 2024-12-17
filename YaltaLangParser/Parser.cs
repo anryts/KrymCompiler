@@ -196,6 +196,7 @@ public class Parser
         }
         else
         {
+            LabelTable.Add(new Label(labelIf, this.CodeTable.Count)); // це костиль, бо мені ліньки зараз його дороблювати
             CodeTable.Add(new Token(0, labelIf, "label"));
         }
         ParserOutput.WriteColoredLine("Parser: IfStatement", ConsoleColor.Yellow);

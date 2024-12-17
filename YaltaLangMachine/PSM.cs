@@ -9,18 +9,20 @@ using YaltaLangParser;
 
 namespace YaltaLangMachine;
 
-public class PSM(Parser parser)
+public class PSM(List<Label> labels, List<Variable> variables, List<Token> tokens)
 {
+    public List<Label> LabelTable { get; set; } = labels;
+    public List<Variable> VariableTable { get; set; } = variables;
+    public List<Token> CodeTable { get; set; } = tokens;
 
-    public FileWriter FileWriter { get; set; } = new FileWriter(parser);
     public void ParsePostfixProgram()
     {
         //GOD method in action
         var operationStack = new Stack<Token>();
         int currentInstructionIndex = 0;
-        while (currentInstructionIndex < parser.CodeTable.Count)
+        while (currentInstructionIndex < CodeTable.Count)
         {
-            var item = parser.CodeTable[currentInstructionIndex];
+            var item = CodeTable[currentInstructionIndex];
              switch (item.Type)
             {
                 case "l-val":
@@ -40,7 +42,7 @@ public class PSM(Parser parser)
                         operationStack.Push(new Token(0, result.ToString(), right.Type));
                         break;
                     }
-                case "intnum" or "realnum":
+                case "intnum" or "realnum" or "boolval":
                     {
                         operationStack.Push(item);
                         break;
@@ -55,6 +57,7 @@ public class PSM(Parser parser)
 
                         switch (item.Lexeme)
                         {
+                            //TODO: це злочин проти людства, блядство якесь, виправ
                             case "==":
                                 {
                                     bool result = false;
@@ -197,8 +200,8 @@ public class PSM(Parser parser)
                         if (!result)
                         {
                             //TODO: add jump to label
-                            var token = parser.CodeTable[currentInstructionIndex - 1];
-                            var label = parser.LabelTable.Find(x => x.Name == token.Lexeme);
+                            var token = CodeTable[currentInstructionIndex - 1];
+                            var label = LabelTable.Find(x => x.Name == token.Lexeme);
                             currentInstructionIndex = label.Index;
                             //Console.WriteLine("false condition");
                             continue;
@@ -208,8 +211,8 @@ public class PSM(Parser parser)
                 case "jmp":
                     {
 
-                        var token = parser.CodeTable[currentInstructionIndex - 1];
-                        var label = parser.LabelTable.Find(x => x.Name == token.Lexeme);
+                        var token = CodeTable[currentInstructionIndex - 1];
+                        var label = LabelTable.Find(x => x.Name == token.Lexeme);
                         currentInstructionIndex = label.Index;
                         break;
                     }
@@ -251,11 +254,11 @@ public class PSM(Parser parser)
     }
 
     //TODO: причеши це в у щось нормальне
-    private static Token GetTokenValue(Token token)
+    private Token GetTokenValue(Token token)
     {
         if (token.Type == "r-val")
         {
-            var variable = GlobalVars.VariableTable.FirstOrDefault(x => x.Name == token.Lexeme);
+            var variable = VariableTable.FirstOrDefault(x => x.Name == token.Lexeme);
             var typeOfId = variable.Type;
             if (typeOfId == "int")
             {
@@ -272,10 +275,5 @@ public class PSM(Parser parser)
             return new Token(0, variable.Value, typeOfId);
         }
         return token;
-    }
-   
-    public void WriteToFile(string fileName = "default")
-    {
-        FileWriter.WriteToFile(fileName);
     }
 }

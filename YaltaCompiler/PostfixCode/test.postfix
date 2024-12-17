@@ -2,19 +2,32 @@
 .version: 1a
 
 .variables(
-   a      double 5     
+   a      int          
 )
 
 .labels(
+   L1     12    
+)
+
+.constants(
+   3      intnum
+   2      intnum
+   2      intnum
 )
 
 .code(
    a      l-val 
-   2      intnum
    3      intnum
-   ^      exp_op
-   3.0    realnum
-   -      add_op
+   2      intnum
+   /      mult_op
    =      assign_op
+   a      r-val 
+   2      intnum
+   >      rel_op
+   L1     label 
+   JF     jf    
+   a      r-val 
+   PRINT  print 
+   L1     label 
 )
 

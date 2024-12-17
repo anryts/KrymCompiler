@@ -360,7 +360,8 @@ public class ExpressionParser
             //йдемо вправо рекурсивно
             var rightType = ParseFactor();
 
-            if (result != rightType || result == "bool")
+            //TODO: перевірка на типи, але у нас до степення піднесення тілки double
+            if (/*result != rightType || */result == "bool")
             {
                 throw new Exception($"Parser: Невідповідність типам: {result} ^ {rightType}");
             }
