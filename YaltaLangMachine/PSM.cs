@@ -1,4 +1,6 @@
 ﻿using Common;
+using Common.Enums;
+using Common.Extensions;
 using OurDartLangLexer.Lexer;
 using System;
 using System.Collections.Generic;
@@ -55,84 +57,7 @@ public class PSM(List<Label> labels, List<Variable> variables, List<Token> token
                         right = GetTokenValue(right);
                         left = GetTokenValue(left);
 
-                        switch (item.Lexeme)
-                        {
-                            //TODO: це злочин проти людства, блядство якесь, виправ
-                            case "==":
-                                {
-                                    bool result = false;
-                                    if (left.Type == "intnum" && right.Type == "intnum")
-                                    {
-                                        result = int.Parse(left.Lexeme) == int.Parse(right.Lexeme);
-                                        operationStack.Push(new Token(0, result.ToString(), "bool"));
-                                    }
-                                    else if (left.Type == "realnum" && right.Type == "realnum")
-                                    {
-                                        result = double.Parse(left.Lexeme) == double.Parse(right.Lexeme);
-                                        operationStack.Push(new Token(0, result.ToString(), "bool"));
-                                    }
-                                    else if (left.Type == "bool" && right.Type == "bool")
-                                    {
-                                        result = left.Lexeme == right.Lexeme;
-                                        operationStack.Push(new Token(0, result.ToString(), "bool"));
-                                    }
-                                    else
-                                    {
-                                        operationStack.Push(new Token(0, "false", "bool"));
-                                    }
-
-                                    break;
-                                }
-                            case "!=":
-                                {
-                                    bool result = false;
-                                    if (left.Type == "intnum" && right.Type == "intnum")
-                                    {
-                                        result = int.Parse(left.Lexeme) != int.Parse(right.Lexeme);
-                                        operationStack.Push(new Token(0, result.ToString(), "bool"));
-                                    }
-                                    else if (left.Type == "realnum" && right.Type == "realnum")
-                                    {
-                                        result = double.Parse(left.Lexeme) != double.Parse(right.Lexeme);
-                                        operationStack.Push(new Token(0, result.ToString(), "bool"));
-                                    }
-                                    else if (left.Type == "bool" && right.Type == "bool")
-                                    {
-                                        result = left.Lexeme != right.Lexeme;
-                                        operationStack.Push(new Token(0, result.ToString(), "bool"));
-                                    }
-                                    else
-                                    {
-                                        operationStack.Push(new Token(0, "false", "bool"));
-                                    }
-
-                                    break;
-                                }
-                            case "<":
-                                {
-                                    var result = left.Lexeme == "intnum" ? int.Parse(left.Lexeme) < int.Parse(right.Lexeme) : double.Parse(left.Lexeme) < double.Parse(right.Lexeme);
-                                    operationStack.Push(new Token(0, result.ToString(), "bool"));
-                                    break;
-                                }
-                            case ">":
-                                {
-                                    var result = left.Lexeme == "intnum" ? int.Parse(left.Lexeme) > int.Parse(right.Lexeme) : double.Parse(left.Lexeme) > double.Parse(right.Lexeme);
-                                    operationStack.Push(new Token(0, result.ToString(), "bool"));
-                                    break;
-                                }
-                            case "<=":
-                                {
-                                    var result = left.Lexeme == "intnum" ? int.Parse(left.Lexeme) <= int.Parse(right.Lexeme) : double.Parse(left.Lexeme) <= double.Parse(right.Lexeme);
-                                    operationStack.Push(new Token(0, result.ToString(), "bool"));
-                                    break;
-                                }
-                            case ">=":
-                                {
-                                    var result = left.Lexeme == "intnum" ? int.Parse(left.Lexeme) >= int.Parse(right.Lexeme) : double.Parse(left.Lexeme) >= double.Parse(right.Lexeme);
-                                    operationStack.Push(new Token(0, result.ToString(), "bool"));
-                                    break;
-                                }
-                        }
+                        PerformRelOp(left, right, item.Lexeme.GetTypeOfOperation(), operationStack);
                         break;
                     }
                 case "add_op":
@@ -143,6 +68,7 @@ public class PSM(List<Label> labels, List<Variable> variables, List<Token> token
                         right = GetTokenValue(right);
                         left = GetTokenValue(left);
 
+                        //TODO: спрости це все
                         switch (item.Lexeme)
                         {
                             case "+":
@@ -202,7 +128,7 @@ public class PSM(List<Label> labels, List<Variable> variables, List<Token> token
                             //TODO: add jump to label
                             var token = CodeTable[currentInstructionIndex - 1];
                             var label = LabelTable.Find(x => x.Name == token.Lexeme);
-                            currentInstructionIndex = label.Index;
+                            currentInstructionIndex = label.Index; //TODO: add +1
                             //Console.WriteLine("false condition");
                             continue;
                         }
@@ -221,10 +147,11 @@ public class PSM(List<Label> labels, List<Variable> variables, List<Token> token
                         var value = operationStack.Pop();
                         var variable = operationStack.Pop();
                         Console.WriteLine($"Присвоєння: {variable.Lexeme} = {value.Lexeme}");
-                        var varIndex = GlobalVars.VariableTable.FindIndex(x => x.Name == variable.Lexeme);
-                        var updatedVariable = GlobalVars.VariableTable[varIndex];
+                        //var varIndex = GlobalVars.VariableTable.FindIndex(x => x.Name == variable.Lexeme);
+                        var varIndex = VariableTable.FindIndex(x => x.Name == variable.Lexeme);
+                        var updatedVariable = VariableTable[varIndex];
                         updatedVariable.Value = value.Lexeme;
-                        GlobalVars.VariableTable[varIndex] = updatedVariable;
+                        VariableTable[varIndex] = updatedVariable;
                         break;
                     }
                 case "print":
@@ -253,7 +180,60 @@ public class PSM(List<Label> labels, List<Variable> variables, List<Token> token
         }
     }
 
-    //TODO: причеши це в у щось нормальне
+
+    /// <summary>
+    /// Метод для виконання уніфікованих операцій порівнянь
+    /// Для bool можливо тільки == та !=
+    /// Інакше отримаєш Exception
+    /// </summary>
+    /// <param name="left"></param>
+    /// <param name="right"></param>
+    /// <param name="operation"></param>
+    private void PerformRelOp(Token left, Token right, OperationType operation, Stack<Token> operationStack)
+    {
+        bool result = false;
+        //Менше зло
+        var leftValue = GetValueFromToken(left);
+        var rightValue = GetValueFromToken(right);
+
+        //TODO: питання, а чи треба для bool, обмежувати операції
+        result = operation switch
+        {
+            OperationType.Equal => leftValue == rightValue,
+            OperationType.NotEqual => leftValue != rightValue,
+            OperationType.GreaterThan => leftValue > rightValue,
+            OperationType.LessThan => leftValue < rightValue,
+            OperationType.GreaterThanOrEqual => leftValue >= rightValue,
+            OperationType.LessThanOrEqual => leftValue <= rightValue,
+            _ => throw new Exception("Invalid operation")
+        };
+
+        operationStack.Push(new Token(0, result.ToString(), "bool"));
+    }
+
+    /// <summary>
+    /// Метод для отримання значення з токену, 
+    /// Звичайно, це погана практика, використання dynamic
+    /// </summary>
+    /// <param name="token"></param>
+    /// <returns></returns>
+    /// <exception cref="Exception"></exception>
+    private dynamic GetValueFromToken(Token token)
+    {
+        return token.Type switch
+        {
+            "intnum" => int.Parse(token.Lexeme),
+            "realnum" => double.Parse(token.Lexeme),
+            "bool" => bool.Parse(token.Lexeme),
+            _ => throw new Exception("Invalid type")
+        };
+    }
+
+    /// <summary>
+    /// Метод для отримання значення змінної
+    /// </summary>
+    /// <param name="token"></param>
+    /// <returns>Повертає об'єкт Token, із lexeme - значенням, type - типом змінної</returns>
     private Token GetTokenValue(Token token)
     {
         if (token.Type == "r-val")

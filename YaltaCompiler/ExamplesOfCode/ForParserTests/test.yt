@@ -1,7 +1,7 @@
 main {
-        int a = 3 / 2;
+        double a = 2 ^ 3;
 
-        when (a > 2){
-            print(a);
+        while (a > 0) {
+                a = a - 1;
         }
 }

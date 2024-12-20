@@ -92,18 +92,14 @@ public class FileProvider(Parser parser)
             if (section == "variables")
             {
                 var parts = line.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                if (parts.Length >= 3)
-                {
-                    VariableTable.Add(new Variable(parts[0], parts[1], string.Empty));
-                }
+
+                VariableTable.Add(new Variable(parts[0], parts[1], string.Empty));
+
             }
             else if (section == "labels")
             {
                 var parts = line.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                if (parts.Length >= 2)
-                {
-                    LabelTable.Add(new Label(parts[0], int.Parse(parts[1])));
-                }
+                LabelTable.Add(new Label(parts[0], int.Parse(parts[1])));
             }
             else if (section == "code")
             {

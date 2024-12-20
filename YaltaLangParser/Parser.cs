@@ -185,14 +185,14 @@ public class Parser
         ParseStatementBlock();
         if (_lexer.TokenTable[GlobalVars.CurrentTokenIndex].Lexeme == "fallback")
         {
-            LabelTable.Add(new Label(labelIf, this.CodeTable.Count )); // це костиль, бо мені ліньки зараз його дороблювати
+            LabelTable.Add(new Label(labelIf, this.CodeTable.Count + 2)); // це костиль, бо мені ліньки зараз його дороблювати
             var labelElse = GenerateLabel();
             CodeTable.Add(new Token(0, labelElse, "label"));
             CodeTable.Add(new Token(0, "JMP", "jmp"));
             CodeTable.Add(new Token(0, labelIf, "label"));
             ParseFallbackStatement();
             CodeTable.Add(new Token(0, labelElse, "label"));
-            LabelTable.Add(new Label(labelElse, this.CodeTable.Count - 1));
+            LabelTable.Add(new Label(labelElse, this.CodeTable.Count));
         }
         else
         {

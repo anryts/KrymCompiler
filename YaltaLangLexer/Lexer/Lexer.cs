@@ -1,6 +1,6 @@
 using System.Text;
 using Common;
-using YaltaLangLexer.Extensions;
+using Common.Extensions;
 using YaltaLangLexer.Lexer;
 
 namespace OurDartLangLexer.Lexer;
