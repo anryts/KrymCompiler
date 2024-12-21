@@ -25,7 +25,7 @@ public class Parser
     /// Та додатково виводить до консолі результат
     /// </summary>
     /// <returns></returns>
-    public string ParseProgram()
+    public int ParseProgram()
     {
         try
         {
@@ -41,12 +41,12 @@ public class Parser
                 throw new Exception("Символ '}' повторюється");
             }
             ParserOutput.WriteSuccess("Парсинг завершено успішно");
-            return string.Empty;
+            return 0;
         }
         catch (Exception e)
         {
             ParserOutput.WriteError($"Помилка парсингу: {e.Message}");
-            return $"Помилка парсингу: {e.Message}";
+            return 1;
         }
     }
 
@@ -266,7 +266,7 @@ public class Parser
         var variable = GlobalVars.VariableTable.FirstOrDefault(v => v.Name == _lexer.TokenTable[GlobalVars.CurrentTokenIndex].Lexeme);
         if (variable == null)
         {
-            throw new Exception($"Variable {_lexer.TokenTable[GlobalVars.CurrentTokenIndex].Lexeme} is not declared");
+            throw new Exception($"Variable {_lexer.TokenTable[GlobalVars.CurrentTokenIndex].Lexeme} не оголошена");
         }
         var currentType = variable.Type;
         CodeTable.Add(new Token(Convert.ToInt32(currentToken.NumLine), variable.Name, "l-val"));

@@ -47,6 +47,10 @@ public class ExpressionParser
         var currentToken = _lexer.TokenTable[GlobalVars.CurrentTokenIndex];
         var leftType = ParseRelationalExpr();
         string rightType = "";
+        if (expectedType == "bool" && leftType == "int")
+        {
+            leftType = "double";
+        }
         while (currentToken.Lexeme is "&&" or "||")
         {
             GlobalVars.SetsOfOperations.Add(currentToken);
@@ -188,7 +192,7 @@ public class ExpressionParser
         ParserOutput.WriteColoredLine("Parser: RelationalExpr", ConsoleColor.DarkYellow);
         ParserOutput.DecreaseIndent();
         //ситуація, маєш 5 < 56 -> ну це ж буль, а між ними якийсь із операторів
-        if (left.Type.Equals(right.type))
+        if (left.Type is "double" or "int" && right.type is "double" or "int")
         {
             return "bool"; //TODO: change this
         }

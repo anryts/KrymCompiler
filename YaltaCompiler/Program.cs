@@ -4,7 +4,6 @@ using YaltaLangLexer.DataProviders;
 using YaltaLangMachine;
 using YaltaLangParser;
 
-
 // Set the culture to invariant globally
 Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
 Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
@@ -20,12 +19,20 @@ var lexer = new Lexer();
 
 var sourceCodeArr = File.ReadAllText(filePath);
 
-lexer.ProcessInput(sourceCodeArr);
+var lexerResult = lexer.ProcessInput(sourceCodeArr);
+if (lexerResult == 1)
+{
+    return;
+}
 OutputHandler.WriteToConsole(lexer.TokenTable, lexer.SymbolTable, lexer.ErrorTable);
 
 var parser = new Parser(lexer);
 
-parser.ParseProgram();
+var parserResult = parser.ParseProgram();
+if (parserResult == 1)
+{
+    return;
+}
 
 var fileProvider= new FileProvider(parser);
 fileProvider.WriteToFile("test");

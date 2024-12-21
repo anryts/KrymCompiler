@@ -1,7 +1,16 @@
 main {
-        double a = 2 ^ 3;
+     int counter = 0;
 
-        while (a > 0) {
-                a = a - 1;
-        }
+         while (counter < 3) {
+             when (counter == 2) {
+                 while (counter < 5) {
+                     print(counter);
+                     counter = counter + 1;
+                 }
+                 print(counter);
+             } fallback {
+                 print(counter);
+             }
+             counter = counter + 1;
+         }
 }
