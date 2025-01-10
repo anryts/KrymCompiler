@@ -23,7 +23,7 @@ public class TokenParser(Lexer lexer)
                 $"Неочікуваний токен: {lexer.TokenTable[GlobalVars.CurrentTokenIndex].Lexeme} на рядку {currentToken.NumLine} " +
                 $"очікувалось {lexeme} типу {token}");
         }
-
+      
         ParserOutput.WriteLine($"Parser: ParseToken: В рядку {lexer.TokenTable[GlobalVars.CurrentTokenIndex].NumLine} токен {lexer.TokenTable[GlobalVars.CurrentTokenIndex].Lexeme} " +
                       $"типу {lexer.TokenTable[GlobalVars.CurrentTokenIndex].Type} було розпізнано");
         ParserOutput.DecreaseIndent();

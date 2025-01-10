@@ -47,8 +47,13 @@ public class ExpressionParser
         var currentToken = _lexer.TokenTable[GlobalVars.CurrentTokenIndex];
         var leftType = ParseRelationalExpr();
         string rightType = "";
+        if (expectedType == "bool" && leftType == "int")
+        {
+            leftType = "double";
+        }
         while (currentToken.Lexeme is "&&" or "||")
         {
+            GlobalVars.SetsOfOperations.Add(currentToken);
             _tokenParser.ParseToken(currentToken.Lexeme, currentToken.Type);
             rightType = ParseRelationalExpr();
 
@@ -86,7 +91,6 @@ public class ExpressionParser
             throw new Exception($"Тип виразу {rightType} не сумісний, на рядку: {currentToken.NumLine}");
         }
 
-
         return ("bool", ""); // Placeholder
     }
 
@@ -106,6 +110,7 @@ public class ExpressionParser
         while (_lexer.TokenTable[GlobalVars.CurrentTokenIndex].Lexeme is "+" or "-")
         {
             var op = _lexer.TokenTable[GlobalVars.CurrentTokenIndex].Lexeme;
+            GlobalVars.SetsOfOperations.Add(_lexer.TokenTable[GlobalVars.CurrentTokenIndex]);
             _tokenParser.ParseToken(op, _lexer.TokenTable[GlobalVars.CurrentTokenIndex].Type);
             
             rightType = ParseTerm();
@@ -173,6 +178,7 @@ public class ExpressionParser
         (string type, string value) right = ("", "");
         if (currentToken.Lexeme is "==" or "!=" or "<" or "<=" or ">" or ">=")
         {
+            GlobalVars.SetsOfOperations.Add(currentToken);
             _tokenParser.ParseToken(currentToken.Lexeme, currentToken.Type);
             right = ParseArithmeticExpression("void");
         }
@@ -186,7 +192,7 @@ public class ExpressionParser
         ParserOutput.WriteColoredLine("Parser: RelationalExpr", ConsoleColor.DarkYellow);
         ParserOutput.DecreaseIndent();
         //ситуація, маєш 5 < 56 -> ну це ж буль, а між ними якийсь із операторів
-        if (left.Type.Equals(right.type))
+        if (left.Type is "double" or "int" && right.type is "double" or "int")
         {
             return "bool"; //TODO: change this
         }
@@ -200,6 +206,7 @@ public class ExpressionParser
     /// <returns></returns>
     private bool IsBooleanExpression()
     {
+        var currentIndex = GlobalVars.SetsOfOperations.Count;
         ParserOutput.IncreaseIndent();
         ParserOutput.WriteColoredLine("Parser: IsBooleanExpression", ConsoleColor.Blue);
         var currentTokenLexeme = _lexer.TokenTable[GlobalVars.CurrentTokenIndex].Lexeme;
@@ -220,6 +227,8 @@ public class ExpressionParser
         }
         ParserOutput.WriteColoredLine($"Parser: IsBooleanExpression {result}", ConsoleColor.Blue);
         ParserOutput.DecreaseIndent();
+        var currentIndex2 = GlobalVars.SetsOfOperations.Count;
+        GlobalVars.SetsOfOperations.RemoveRange(currentIndex, GlobalVars.SetsOfOperations.Count - currentIndex);
         return result;
     }
 
@@ -258,6 +267,7 @@ public class ExpressionParser
         while (_lexer.TokenTable[GlobalVars.CurrentTokenIndex].Lexeme is "*" or "/")
         {
             var op = _lexer.TokenTable[GlobalVars.CurrentTokenIndex].Lexeme;
+            GlobalVars.SetsOfOperations.Add(_lexer.TokenTable[GlobalVars.CurrentTokenIndex]);
             _tokenParser.ParseToken(_lexer.TokenTable[GlobalVars.CurrentTokenIndex].Lexeme, _lexer.TokenTable[GlobalVars.CurrentTokenIndex].Type);
             //Логіка перевірки на нуль, криво і косо, але воно працює
             if (op == "/" && (Convert.ToInt16(_lexer.TokenTable[GlobalVars.CurrentTokenIndex].Lexeme) == 0))
@@ -288,10 +298,12 @@ public class ExpressionParser
 
 
         // Якщо маємо унарний оператор
-        if (currentToken.Lexeme == "-" || currentToken.Lexeme == "+")
+        if (currentToken.Lexeme == "-") //|| currentToken.Lexeme == "+")
         {
+            GlobalVars.SetsOfOperations.Add(new Token(int.Parse(currentToken.NumLine), "NEG", "neg_op"));
+            
             _tokenParser.ParseToken(currentToken.Lexeme, "add_op"); // Розпізнаємо унарний оператор
-
+           
             var operandType = ParseFactor(); // Розбираємо операнд
 
             if (operandType == "bool")
@@ -308,40 +320,52 @@ public class ExpressionParser
             {
                 throw new Exception($"Змінна {currentToken.Lexeme} не була оголошена");
             }
-
+            GlobalVars.SetsOfOperations.Add(new Token(int.Parse(currentToken.NumLine), currentToken.Lexeme, "r-val"));
+            //GlobalVars.SetsOfOperations.Add(currentToken);
             _tokenParser.ParseToken(currentToken.Lexeme, "id");
+           
             result = GlobalVars.VariableTable.First(v => v.Name == currentToken.Lexeme).Type;
         }
 
         if (currentToken.Type == "intnum" || currentToken.Type == "realnum")
         {
+            GlobalVars.SetsOfOperations.Add(currentToken);
             _tokenParser.ParseToken(currentToken.Lexeme, currentToken.Type);
+            
             result = currentToken.Type == "intnum" ? "int" : "double";
             //_currentTokenIndex++;
         }
 
         if (currentToken.Lexeme is "true" or "false")
         {
+            GlobalVars.SetsOfOperations.Add(currentToken);
             _tokenParser.ParseToken(currentToken.Lexeme, "boolval");
+            
             result = "bool";
             //_currentTokenIndex++;
         }
 
         if (_lexer.TokenTable[GlobalVars.CurrentTokenIndex].Lexeme == "(")
         {
+            GlobalVars.SetsOfOperations.Add(_lexer.TokenTable[GlobalVars.CurrentTokenIndex]);
             _tokenParser.ParseToken("(", "brackets_op");
             result = ParseExpression("void").type;
+            GlobalVars.SetsOfOperations.Add(_lexer.TokenTable[GlobalVars.CurrentTokenIndex]);
             _tokenParser.ParseToken(")", "brackets_op");
+            
         }
 
         //Правоасоціативний оператор ^, для його обробки використовуємо рекурсію
         if (_lexer.TokenTable[GlobalVars.CurrentTokenIndex].Lexeme == "^")
         {
+            GlobalVars.SetsOfOperations.Add(_lexer.TokenTable[GlobalVars.CurrentTokenIndex]);
             _tokenParser.ParseToken("^", "exp_op");
+          
             //йдемо вправо рекурсивно
             var rightType = ParseFactor();
 
-            if (result != rightType || result == "bool")
+            //TODO: перевірка на типи, але у нас до степення піднесення тілки double
+            if (/*result != rightType || */result == "bool")
             {
                 throw new Exception($"Parser: Невідповідність типам: {result} ^ {rightType}");
             }

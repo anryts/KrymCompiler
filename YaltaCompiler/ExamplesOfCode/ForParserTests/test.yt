@@ -1,3 +1,16 @@
 main {
-       double pi = 3.14 / 2;
+     int counter = 0;
+
+         while (counter < 3) {
+             when (counter == 2) {
+                 while (counter < 5) {
+                     print(counter);
+                     counter = counter + 1;
+                 }
+                 print(counter);
+             } fallback {
+                 print(counter);
+             }
+             counter = counter + 1;
+         }
 }

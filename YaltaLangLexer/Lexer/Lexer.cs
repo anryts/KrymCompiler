@@ -1,6 +1,6 @@
 using System.Text;
 using Common;
-using YaltaLangLexer.Extensions;
+using Common.Extensions;
 using YaltaLangLexer.Lexer;
 
 namespace OurDartLangLexer.Lexer;
@@ -27,7 +27,7 @@ public class Lexer
     /// Початок лексичного аналізу
     /// </summary>
     /// <param name="input">зчитаний текст програми</param>
-    public void ProcessInput(string input)
+    public int ProcessInput(string input)
     {
         int state = 0;
         var lexeme = new StringBuilder();
@@ -63,11 +63,13 @@ public class Lexer
                 }
             }
             Console.WriteLine("Lexer: Лексичний аналіз завершено успішно");
+            return 0;
         }
         catch (Exception e)
         {
             Console.WriteLine($"Lexer: Аварійне завершення програми з кодом {e.Message}");
             ErroMessage = e.Message;
+            return 1;
         }
     }
 

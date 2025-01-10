@@ -16,6 +16,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YaltaCompiler", "YaltaCompi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common", "Common\Common.csproj", "{9828F1A4-C924-433A-B0FF-B25046F534A6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YaltaLangMachine", "YaltaLangMachine\YaltaLangMachine.csproj", "{40B6D428-687C-4EA0-B60D-4E0E0C8744CF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -42,6 +44,10 @@ Global
 		{9828F1A4-C924-433A-B0FF-B25046F534A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9828F1A4-C924-433A-B0FF-B25046F534A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9828F1A4-C924-433A-B0FF-B25046F534A6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{40B6D428-687C-4EA0-B60D-4E0E0C8744CF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{40B6D428-687C-4EA0-B60D-4E0E0C8744CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{40B6D428-687C-4EA0-B60D-4E0E0C8744CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{40B6D428-687C-4EA0-B60D-4E0E0C8744CF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
