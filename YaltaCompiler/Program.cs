@@ -40,6 +40,8 @@ var result = fileProvider.ReadFromFile("test");
 var translator = new PSM(result.labelTable, result.variableTable, result.codeTable);
 
 translator.ParsePostfixProgram();
+var msilCode = translator.TranslatePostfixToMSIL();
 
+var msilFilePath = Path.Combine(projectDirectory, "ExamplesOfCode", "ForParserTests", "test.il");
+File.WriteAllText(msilFilePath, msilCode);
 
-//TODO: test a parser for numeric expressions

@@ -10,8 +10,4 @@
     <ProjectReference Include="..\YaltaLangParser\YaltaLangParser.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="PostfixCode\" />
-  </ItemGroup>
-
 </Project>

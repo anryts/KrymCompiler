@@ -189,6 +189,122 @@ public class PSM(List<Label> labels, List<Variable> variables, List<Token> token
         }
     }
 
+    /// <summary>
+    /// Трансляція постфіксного виразу в MSIL
+    /// для подальшого виконання на CLR
+    /// </summary>
+    public string TranslatePostfixToMSIL()
+    {
+        var msilCode = new StringBuilder();
+        msilCode.AppendLine(".assembly program {}");
+        msilCode.AppendLine(".method static void Main() cil managed");
+        msilCode.AppendLine("{");
+
+        //додаємо змінні
+        foreach (var variable in VariableTable)
+        {
+            msilCode.AppendLine($".locals init ({variable.Type} {variable.Name})");
+        }
+
+        //додаємо інструкції
+        foreach (var token in CodeTable)
+        {
+            switch (token.Type)
+            {
+                case "l-val":
+                {
+                    msilCode.AppendLine($"ldloc {token.Lexeme}");
+                    break;
+                }
+                case "r-val":
+                {
+                    msilCode.AppendLine($"ldloc {token.Lexeme}");
+                    break;
+                }
+                case "neg_op":
+                {
+                    msilCode.AppendLine("neg");
+                    break;
+                }
+                case "intnum" or "realnum" or "boolval":
+                {
+                    msilCode.AppendLine($"ldc.i4 {token.Lexeme}");
+                    break;
+                }
+                case "rel_op":
+                {
+                    msilCode.AppendLine(token.Lexeme switch
+                    {
+                        "==" => "ceq",
+                        "!=" => "ceq\nldc.i4.0\ncgt",
+                        ">" => "cgt",
+                        "<" => "clt",
+                        ">=" => "clt\nldc.i4.0\ncgt",
+                        "<=" => "cgt\nldc.i4.0\ncgt",
+                        _ => throw new Exception("Invalid operation")
+                    });
+                    break;
+                }
+                case "add_op":
+                {
+                    msilCode.AppendLine(token.Lexeme switch
+                    {
+                        "+" => "add",
+                        "-" => "sub",
+                        _ => throw new Exception("Invalid operation")
+                    });
+                    break;
+                }
+                case "mult_op":
+                {
+                    msilCode.AppendLine(token.Lexeme switch
+                    {
+                        "*" => "mul",
+                        "/" => "div",
+                        _ => throw new Exception("Invalid operation")
+                    });
+                    break;
+                }
+                case "exp_op":
+                {
+                    msilCode.AppendLine("call float64 [mscorlib]System.Math::Pow(float64, float64)");
+                    break;
+                }
+                case "jf":
+                {
+                    msilCode.AppendLine($"brfalse {token.Lexeme}");
+                    break;
+                }
+                case "jmp":
+                {
+                    msilCode.AppendLine($"br {token.Lexeme}");
+                    break;
+                }
+                case "assign_op":
+                {
+                    msilCode.AppendLine("stloc");
+                    break;
+                }
+                case "print":
+                {
+                    msilCode.AppendLine("call void [mscorlib]System.Console::WriteLine(string)");
+                    break;
+                }
+                case "read":
+                {
+                    msilCode.AppendLine(" call string [mscorlib]System.Console::ReadLine()");
+                    msilCode.AppendLine("stloc");
+                    break;
+                }
+            }
+        }
+
+        msilCode.AppendLine("ret");
+        msilCode.AppendLine("}");
+
+        return msilCode.ToString();
+    }
+
     private void PerformAssignOperation(Token value, Token variable)
     {
         var valueToAssign = GetValueFromToken(value);

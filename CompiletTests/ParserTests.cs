@@ -44,7 +44,7 @@ public class ParserTests
             var parser = new Parser(lexer);
             var result = parser.ParseProgram();
 
-            Assert.True(string.IsNullOrEmpty(result));
+            Assert.Equal(0, result);
         }
     }
 }
