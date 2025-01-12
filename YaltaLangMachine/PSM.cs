@@ -199,26 +199,53 @@ public class PSM(List<Label> labels, List<Variable> variables, List<Token> token
         msilCode.AppendLine(".assembly program {}");
         msilCode.AppendLine(".method static void Main() cil managed");
         msilCode.AppendLine("{");
+        msilCode.AppendLine(".entrypoint");
+        // Це для того, щоб вказати максимальну кількість елементів в стеку,
+        //TODO: поцікавитись, чи можна автоматизувати
+        msilCode.AppendLine(".maxstack 128");
+        msilCode.AppendLine(".locals init (");
 
-        //додаємо змінні
-        foreach (var variable in VariableTable)
+        //боже мій, вау
+        foreach (var (variable, i) in VariableTable.Select((variable, i) =>  (variable, i)))
         {
-            msilCode.AppendLine($".locals init ({variable.Type} {variable.Name})");
+            var type = variable.Type switch
+            {
+                "int" => "int32",
+                "double" => "float64",
+                "bool" => "bool",
+                _ => throw new Exception("Invalid type")
+            };
+            // add logic to check if it is the last element, if not add comma
+            //TODO: виправити це
+            if (i != VariableTable.Count - 1)
+            {
+                msilCode.AppendLine($"[{i}] {type} {variable.Name},");
+            }
+            else
+            {
+                msilCode.AppendLine($"[{i}] {type} {variable.Name}");
+            }
         }
-
+        msilCode.AppendLine(")");
+        int index = 0;
         //додаємо інструкції
         foreach (var token in CodeTable)
         {
+            if (VariableTable.FindIndex(x => x.Name == token.Lexeme) != -1)
+            {
+                index = VariableTable.FindIndex(x => x.Name == token.Lexeme);
+            }
+
             switch (token.Type)
             {
                 case "l-val":
                 {
-                    msilCode.AppendLine($"ldloc {token.Lexeme}");
+                    //msilCode.AppendLine($"ldloc.{index}");
                     break;
                 }
                 case "r-val":
                 {
-                    msilCode.AppendLine($"ldloc {token.Lexeme}");
+                    msilCode.AppendLine($"ldloc.{index}");
                     break;
                 }
                 case "neg_op":
@@ -226,6 +253,7 @@ public class PSM(List<Label> labels, List<Variable> variables, List<Token> token
                     msilCode.AppendLine("neg");
                     break;
                 }
+                //TODO: Потрібно правильно підтягувати типи
                 case "intnum" or "realnum" or "boolval":
                 {
                     msilCode.AppendLine($"ldc.i4 {token.Lexeme}");
@@ -233,6 +261,7 @@ public class PSM(List<Label> labels, List<Variable> variables, List<Token> token
                 }
                 case "rel_op":
                 {
+                    //TODO: Потрібно правильно підтягувати типи
                     msilCode.AppendLine(token.Lexeme switch
                     {
                         "==" => "ceq",
@@ -282,12 +311,20 @@ public class PSM(List<Label> labels, List<Variable> variables, List<Token> token
                 }
                 case "assign_op":
                 {
-                    msilCode.AppendLine("stloc");
+
+                    msilCode.AppendLine($"stloc.{index}");
                     break;
                 }
                 case "print":
                 {
-                    msilCode.AppendLine("call void [mscorlib]System.Console::WriteLine(string)");
+                    var variableType = VariableTable[index].Type;
+                    msilCode.AppendLine(variableType switch
+                    {
+                        "int" => "call void [mscorlib]System.Console::WriteLine(int32)",
+                        "double" => "call void [mscorlib]System.Console::WriteLine(float64)",
+                        "bool" => "call void [mscorlib]System.Console::WriteLine(bool)",
+                        _ => throw new Exception("Invalid type")
+                    });
                     break;
                 }
                 case "read":
