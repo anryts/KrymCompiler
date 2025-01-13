@@ -21,4 +21,15 @@ public static class StringExtension
             _ => throw new Exception($"The {str} is not a operation"),
         };
     }
+
+    public static string ConvertToMSILType(this string str)
+    {
+        return str switch
+        {
+            "int" => "int32",
+            "double" => "float64",
+            "bool" => "bool",
+            _ => throw new Exception($"The {str} is not a type"),
+        };
+    }
 }

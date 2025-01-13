@@ -28,161 +28,166 @@ public class PSM(List<Label> labels, List<Variable> variables, List<Token> token
             switch (item.Type)
             {
                 case "l-val":
-                {
-                    operationStack.Push(item);
-                    break;
-                }
+                    {
+                        operationStack.Push(item);
+                        break;
+                    }
                 case "r-val":
-                {
-                    operationStack.Push(item);
-                    break;
-                }
+                    {
+                        operationStack.Push(item);
+                        break;
+                    }
                 case "neg_op":
-                {
-                    var right = operationStack.Pop();
-                    //TODO: bool value
-                    var result = right.Type == "intnum" ? -int.Parse(right.Lexeme) : -double.Parse(right.Lexeme);
-                    operationStack.Push(new Token(0, result.ToString(), right.Type));
-                    break;
-                }
+                    {
+                        var right = operationStack.Pop();
+                        //TODO: bool value
+                        var result = right.Type == "intnum" ? -int.Parse(right.Lexeme) : -double.Parse(right.Lexeme);
+                        operationStack.Push(new Token(0, result.ToString(), right.Type));
+                        break;
+                    }
                 case "intnum" or "realnum" or "boolval":
-                {
-                    operationStack.Push(item);
-                    break;
-                }
+                    {
+                        operationStack.Push(item);
+                        break;
+                    }
                 case "rel_op":
-                {
-                    var right = operationStack.Pop();
-                    var left = operationStack.Pop();
+                    {
+                        var right = operationStack.Pop();
+                        var left = operationStack.Pop();
 
-                    right = GetTokenValue(right);
-                    left = GetTokenValue(left);
+                        right = GetTokenValue(right);
+                        left = GetTokenValue(left);
 
-                    var result = PerformRelOp(left, right, item.Lexeme.GetTypeOfOperation());
-                    operationStack.Push(result);
-                    break;
-                }
+                        var result = PerformRelOp(left, right, item.Lexeme.GetTypeOfOperation());
+                        operationStack.Push(result);
+                        break;
+                    }
                 case "add_op":
-                {
-                    var right = operationStack.Pop();
-                    var left = operationStack.Pop();
-
-                    right = GetTokenValue(right);
-                    left = GetTokenValue(left);
-
-                    var higherType =
-                        right.Type == "realnum" || right.Type == "double" || left.Type == "double" ||
-                        left.Type == "realnum"
-                            ? "realnum"
-                            : "intnum";
-
-                    var rightValue = GetValueFromToken(right);
-                    var leftValue = GetValueFromToken(left);
-                    //TODO: спрости це все
-                    switch (item.Lexeme)
                     {
-                        case "+":
-                        {
-                            var result = rightValue + leftValue;
-                            operationStack.Push(new Token(0, result.ToString(), higherType));
-                            break;
-                        }
-                        case "-":
-                        {
-                            var result = rightValue - leftValue;
-                            operationStack.Push(new Token(0, result.ToString(), higherType));
-                            break;
-                        }
-                    }
+                        var right = operationStack.Pop();
+                        var left = operationStack.Pop();
 
-                    break;
-                }
+                        right = GetTokenValue(right);
+                        left = GetTokenValue(left);
+
+                        var higherType =
+                            right.Type == "realnum" || right.Type == "double" || left.Type == "double" ||
+                            left.Type == "realnum"
+                                ? "realnum"
+                                : "intnum";
+
+                        var rightValue = GetValueFromToken(right);
+                        var leftValue = GetValueFromToken(left);
+                        //TODO: спрости це все
+                        switch (item.Lexeme)
+                        {
+                            case "+":
+                                {
+                                    var result = rightValue + leftValue;
+                                    operationStack.Push(new Token(0, result.ToString(), higherType));
+                                    break;
+                                }
+                            case "-":
+                                {
+                                    var result = rightValue - leftValue;
+                                    operationStack.Push(new Token(0, result.ToString(), higherType));
+                                    break;
+                                }
+                        }
+
+                        break;
+                    }
                 case "mult_op":
-                {
-                    var right = operationStack.Pop();
-                    var left = operationStack.Pop();
-                    switch (item.Lexeme)
                     {
-                        case "*":
+                        var right = operationStack.Pop();
+                        var left = operationStack.Pop();
+                        switch (item.Lexeme)
                         {
-                            var result = right.Type == "intnum"
-                                ? int.Parse(right.Lexeme) * int.Parse(left.Lexeme)
-                                : double.Parse(right.Lexeme) * double.Parse(left.Lexeme);
-                            operationStack.Push(new Token(0, result.ToString(), right.Type));
-                            break;
+                            case "*":
+                                {
+                                    var result = right.Type == "intnum"
+                                        ? int.Parse(right.Lexeme) * int.Parse(left.Lexeme)
+                                        : double.Parse(right.Lexeme) * double.Parse(left.Lexeme);
+                                    operationStack.Push(new Token(0, result.ToString(), right.Type));
+                                    break;
+                                }
+                            case "/":
+                                {
+                                    var result = right.Type == "intnum"
+                                        ? int.Parse(left.Lexeme) / int.Parse(right.Lexeme)
+                                        : double.Parse(left.Lexeme) / double.Parse(right.Lexeme);
+                                    operationStack.Push(new Token(0, result.ToString(), right.Type));
+                                    break;
+                                }
                         }
-                        case "/":
-                        {
-                            var result = right.Type == "intnum"
-                                ? int.Parse(left.Lexeme) / int.Parse(right.Lexeme)
-                                : double.Parse(left.Lexeme) / double.Parse(right.Lexeme);
-                            operationStack.Push(new Token(0, result.ToString(), right.Type));
-                            break;
-                        }
+
+                        break;
                     }
-
-                    break;
-                }
                 case "exp_op":
-                {
-                    var right = operationStack.Pop();
-                    var left = operationStack.Pop();
-
-                    var result = Math.Pow(double.Parse(left.Lexeme), double.Parse(right.Lexeme));
-                    operationStack.Push(new Token(0, result.ToString(), "realnum"));
-                    break;
-                }
-                case "jf":
-                {
-                    var condition = operationStack.Pop();
-                    var result = Convert.ToBoolean(condition.Lexeme);
-                    if (!result)
                     {
-                        //TODO: add jump to label
+                        var right = operationStack.Pop();
+                        var left = operationStack.Pop();
+
+                        var result = Math.Pow(double.Parse(left.Lexeme), double.Parse(right.Lexeme));
+                        operationStack.Push(new Token(0, result.ToString(), "realnum"));
+                        break;
+                    }
+                case "jf":
+                    {
+                        var condition = operationStack.Pop();
+                        //достань тип змінної у випадку, якщо це boolval
+                        if (condition.Type == "r-val")
+                        {
+                            condition = GetTokenValue(condition);
+                        }
+                        var result = Convert.ToBoolean(condition.Lexeme);
+                        if (!result)
+                        {
+                            //TODO: add jump to label
+                            var token = CodeTable[currentInstructionIndex - 1];
+                            var label = LabelTable.Find(x => x.Name == token.Lexeme);
+                            currentInstructionIndex = label.Index; //TODO: add +1
+                                                                   //Console.WriteLine("false condition");
+                            continue;
+                        }
+
+                        break;
+                    }
+                case "jmp":
+                    {
                         var token = CodeTable[currentInstructionIndex - 1];
                         var label = LabelTable.Find(x => x.Name == token.Lexeme);
-                        currentInstructionIndex = label.Index; //TODO: add +1
-                        //Console.WriteLine("false condition");
+                        currentInstructionIndex = label.Index;
                         continue;
                     }
-
-                    break;
-                }
-                case "jmp":
-                {
-                    var token = CodeTable[currentInstructionIndex - 1];
-                    var label = LabelTable.Find(x => x.Name == token.Lexeme);
-                    currentInstructionIndex = label.Index;
-                    continue;
-                }
                 case "assign_op":
-                {
-                    var value = operationStack.Pop();
-                    var variable = operationStack.Pop();
-                    PerformAssignOperation(value, variable);
-                    break;
-                }
+                    {
+                        var value = operationStack.Pop();
+                        var variable = operationStack.Pop();
+                        PerformAssignOperation(value, variable);
+                        break;
+                    }
                 case "print":
-                {
-                    var value = operationStack.Pop();
-                    var valueToPrint = GetTokenValue(value);
-                    Console.WriteLine($"Вивід: {valueToPrint.Lexeme}");
-                    break;
-                }
+                    {
+                        var value = operationStack.Pop();
+                        var valueToPrint = GetTokenValue(value);
+                        Console.WriteLine($"Вивід: {valueToPrint.Lexeme}");
+                        break;
+                    }
                 case "read":
-                {
-                    var variable = operationStack.Pop();
-                    var variableValue = GetTokenValue(variable);
-                    Console.Write($"Ввведіть значення для змінної: {variable.Lexeme} типу: {variableValue.Lexeme} >>");
-                    var result = Console.ReadLine();
-                    var varIndex = GlobalVars.VariableTable.FindIndex(x => x.Name == variable.Lexeme);
-                    var updatedVariable = GlobalVars.VariableTable[varIndex];
-                    //var convertedResult= right.Type == "intnum" ? int.Parse(right.Lexeme) + int.Parse(left.Lexeme) : double.Parse(right.Lexeme) + double.Parse(left.Lexeme);
-                    var convertedResult = variableValue.Type == "intnum" ? int.Parse(result) : double.Parse(result);
-                    updatedVariable.Value = convertedResult.ToString();
-                    GlobalVars.VariableTable[varIndex] = updatedVariable;
-                    break;
-                }
+                    {
+                        var variable = operationStack.Pop();
+                        var variableValue = GetTokenValue(variable);
+                        Console.Write($"Ввведіть значення для змінної: {variable.Lexeme} типу: {variableValue.Lexeme} >>");
+                        var result = Console.ReadLine();
+                        var varIndex = GlobalVars.VariableTable.FindIndex(x => x.Name == variable.Lexeme);
+                        var updatedVariable = GlobalVars.VariableTable[varIndex];
+                        //var convertedResult= right.Type == "intnum" ? int.Parse(right.Lexeme) + int.Parse(left.Lexeme) : double.Parse(right.Lexeme) + double.Parse(left.Lexeme);
+                        var convertedResult = variableValue.Type == "intnum" ? int.Parse(result) : double.Parse(result);
+                        updatedVariable.Value = convertedResult.ToString();
+                        GlobalVars.VariableTable[varIndex] = updatedVariable;
+                        break;
+                    }
             }
 
             currentInstructionIndex++;
@@ -206,7 +211,7 @@ public class PSM(List<Label> labels, List<Variable> variables, List<Token> token
         msilCode.AppendLine(".locals init (");
 
         //боже мій, вау
-        foreach (var (variable, i) in VariableTable.Select((variable, i) =>  (variable, i)))
+        foreach (var (variable, i) in VariableTable.Select((variable, i) => (variable, i)))
         {
             var type = variable.Type switch
             {
@@ -229,113 +234,7 @@ public class PSM(List<Label> labels, List<Variable> variables, List<Token> token
         msilCode.AppendLine(")");
         int index = 0;
         //додаємо інструкції
-        foreach (var token in CodeTable)
-        {
-            if (VariableTable.FindIndex(x => x.Name == token.Lexeme) != -1)
-            {
-                index = VariableTable.FindIndex(x => x.Name == token.Lexeme);
-            }
-
-            switch (token.Type)
-            {
-                case "l-val":
-                {
-                    //msilCode.AppendLine($"ldloc.{index}");
-                    break;
-                }
-                case "r-val":
-                {
-                    msilCode.AppendLine($"ldloc.{index}");
-                    break;
-                }
-                case "neg_op":
-                {
-                    msilCode.AppendLine("neg");
-                    break;
-                }
-                //TODO: Потрібно правильно підтягувати типи
-                case "intnum" or "realnum" or "boolval":
-                {
-                    msilCode.AppendLine($"ldc.i4 {token.Lexeme}");
-                    break;
-                }
-                case "rel_op":
-                {
-                    //TODO: Потрібно правильно підтягувати типи
-                    msilCode.AppendLine(token.Lexeme switch
-                    {
-                        "==" => "ceq",
-                        "!=" => "ceq\nldc.i4.0\ncgt",
-                        ">" => "cgt",
-                        "<" => "clt",
-                        ">=" => "clt\nldc.i4.0\ncgt",
-                        "<=" => "cgt\nldc.i4.0\ncgt",
-                        _ => throw new Exception("Invalid operation")
-                    });
-                    break;
-                }
-                case "add_op":
-                {
-                    msilCode.AppendLine(token.Lexeme switch
-                    {
-                        "+" => "add",
-                        "-" => "sub",
-                        _ => throw new Exception("Invalid operation")
-                    });
-                    break;
-                }
-                case "mult_op":
-                {
-                    msilCode.AppendLine(token.Lexeme switch
-                    {
-                        "*" => "mul",
-                        "/" => "div",
-                        _ => throw new Exception("Invalid operation")
-                    });
-                    break;
-                }
-                case "exp_op":
-                {
-                    msilCode.AppendLine("call float64 [mscorlib]System.Math::Pow(float64, float64)");
-                    break;
-                }
-                case "jf":
-                {
-                    msilCode.AppendLine($"brfalse {token.Lexeme}");
-                    break;
-                }
-                case "jmp":
-                {
-                    msilCode.AppendLine($"br {token.Lexeme}");
-                    break;
-                }
-                case "assign_op":
-                {
-
-                    msilCode.AppendLine($"stloc.{index}");
-                    break;
-                }
-                case "print":
-                {
-                    var variableType = VariableTable[index].Type;
-                    msilCode.AppendLine(variableType switch
-                    {
-                        "int" => "call void [mscorlib]System.Console::WriteLine(int32)",
-                        "double" => "call void [mscorlib]System.Console::WriteLine(float64)",
-                        "bool" => "call void [mscorlib]System.Console::WriteLine(bool)",
-                        _ => throw new Exception("Invalid type")
-                    });
-                    break;
-                }
-                case "read":
-                {
-                    msilCode.AppendLine(" call string [mscorlib]System.Console::ReadLine()");
-                    msilCode.AppendLine("stloc");
-                    break;
-                }
-            }
-        }
-
+        msilCode.Append(GlobalVars.MSILOutput.ToString());
         msilCode.AppendLine("ret");
         msilCode.AppendLine("}");
 
@@ -403,7 +302,7 @@ public class PSM(List<Label> labels, List<Variable> variables, List<Token> token
         {
             "intnum" or "int " => int.Parse(token.Lexeme), //TODO:а чому відразу не уніфікувати
             "realnum" or "double" => double.Parse(token.Lexeme),
-            "bool" => bool.Parse(token.Lexeme),
+            "boolval" => bool.Parse(token.Lexeme),
             _ => throw new Exception("Invalid type")
         };
     }

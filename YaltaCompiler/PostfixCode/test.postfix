@@ -3,23 +3,45 @@
 
 .variables(
    counter int          
+   a      int          
 )
 
 .labels(
+   L1     3     
+   L2     19    
 )
 
 .constants(
+   0      intnum
+   10     intnum
+   1      intnum
    5      intnum
-   2      intnum
 )
 
 .code(
    counter l-val 
-   5      intnum
-   2      intnum
+   0      intnum
+   =      assign_op
+   L1     label 
+   counter r-val 
+   10     intnum
+   <      rel_op
+   L2     label 
+   JF     jf    
+   counter l-val 
+   counter r-val 
+   1      intnum
    +      add_op
    =      assign_op
    counter r-val 
+   PRINT  print 
+   L1     label 
+   JMP    jmp   
+   L2     label 
+   a      l-val 
+   5      intnum
+   =      assign_op
+   a      r-val 
    PRINT  print 
 )
 

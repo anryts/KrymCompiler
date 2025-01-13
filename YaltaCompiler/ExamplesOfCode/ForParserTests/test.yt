@@ -1,4 +1,10 @@
 main {
-     int counter = 5 + 2;
-     print(counter);
+   int counter = 0;
+   while (counter < 10)
+   {
+   counter = counter + 1;
+   print(counter);
+   }
+   int a = 5;
+   print(a);
 }
